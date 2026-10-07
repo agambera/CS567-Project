@@ -81,12 +81,12 @@ Warning: invalid score 105 for Dmitri, skipping.
 
 Rank  Name         Average   Grade
 ----------------------------------
-1     Alice          91.25       A
-2     Dmitri         87.67       B
-3     Farah          82.50       B
-4     Ben            80.25       B
-5     Carmen         66.25       D
-6     Elena          55.75       F
+1     Alice        91.25       A
+2     Dmitri       87.67       B
+3     Farah        82.50       B
+4     Ben          80.25       B
+5     Carmen       66.25       D
+6     Elena        55.75       F
 
 Class average: 77.28
 Top student:   Alice (91.25)
