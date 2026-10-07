@@ -1,0 +1,94 @@
+ANSWER KEY - gradebook.py
+=========================
+Intended behavior: build a list of students, compute each student's average
+and letter grade, print a report ranked highest -> lowest, then print the
+class average and the top student.
+
+There are 5 bugs. Line numbers refer to the original (unmodified) file.
+
+
+BUG 1 - Line 34 - Mutable default argument
+------------------------------------------
+    def __init__(self, name, scores=[]):
+
+The default list [] is created only ONCE, when the function is defined, so
+every Student created without a scores argument shares the SAME list. All
+scores from every student end up in one list, and every student gets the same
+average (72.83 in the buggy output).
+
+Fix:
+    def __init__(self, name, scores=None):
+        self.name = name
+        self.scores = scores if scores is not None else []
+
+
+BUG 2 - Line 50 - Off-by-one loop skips the first score
+-------------------------------------------------------
+    for i in range(1, len(self.scores)):
+
+The range starts at 1, so self.scores[0] is never added to the total, but
+the total is still divided by the full number of scores. Averages come out
+too low.
+
+Fix:
+    for i in range(len(self.scores)):
+    (or simply: total = sum(self.scores))
+
+
+BUG 3 - Lines 59-62 - if/elif conditions in the wrong order
+-----------------------------------------------------------
+    elif avg >= 70:
+        return "C"
+    elif avg >= 80:
+        return "B"
+
+Any average >= 80 also satisfies avg >= 70, so it returns "C" first. The
+"B" branch can never run.
+
+Fix: check 80 before 70:
+    elif avg >= 80:
+        return "B"
+    elif avg >= 70:
+        return "C"
+
+
+BUG 4 - Line 85 - Sort order is ascending instead of descending
+---------------------------------------------------------------
+    return sorted(students, key=lambda s: s.average())
+
+sorted() is ascending by default, so the report lists the LOWEST average
+as rank 1. (Hidden at first because Bug 1 makes all averages equal.)
+
+Fix:
+    return sorted(students, key=lambda s: s.average(), reverse=True)
+
+
+BUG 5 - Line 125 - Method referenced but not called (CRASH)
+-----------------------------------------------------------
+    print(f"Top student:   {best.name} ({best.average:.2f})")
+
+best.average is the method object itself, not its return value, so applying
+the :.2f format raises:
+    TypeError: unsupported format string passed to method.__format__
+
+Fix:
+    print(f"Top student:   {best.name} ({best.average():.2f})")
+
+
+EXPECTED OUTPUT AFTER ALL 5 FIXES
+---------------------------------
+Warning: invalid score 105 for Dmitri, skipping.
+
+Rank  Name         Average   Grade
+----------------------------------
+1     Alice          91.25       A
+2     Dmitri         87.67       B
+3     Farah          82.50       B
+4     Ben            80.25       B
+5     Carmen         66.25       D
+6     Elena          55.75       F
+
+Class average: 77.28
+Top student:   Alice (91.25)
+
+Note: the "invalid score 105" warning is CORRECT behavior, not a bug.
