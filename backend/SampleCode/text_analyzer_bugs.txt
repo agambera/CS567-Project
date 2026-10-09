@@ -1,0 +1,97 @@
+ANSWER KEY - text_analyzer.py
+=============================
+Intended behavior: count sentences, total words, and unique words in a
+passage; list the 5 most frequent words; and use binary search to report
+whether each search word appears in the passage (case-insensitive).
+
+There are 5 bugs. Line numbers refer to the original (unmodified) file.
+
+
+BUG 1 - Line 32 - String method result is thrown away
+-----------------------------------------------------
+    word.lower()
+
+Strings are immutable, so .lower() returns a NEW string and does not change
+word. The result is never saved, so words keep their original case: "The"
+and "the" are counted as different words, and "Trails" is never matched.
+
+Fix:
+    word = word.lower()
+
+
+BUG 2 - Line 48 - Sentence count is off by one
+----------------------------------------------
+    return len(text.split("."))
+
+The passage ends with a period, so split(".") produces an extra empty string
+at the end of the list. The program reports 7 sentences instead of 6.
+
+Fix (any one of these):
+    return len(text.split(".")) - 1
+    return text.count(".")
+
+
+BUG 3 - Lines 55-58 - Dictionary counting logic is reversed (CRASH)
+-------------------------------------------------------------------
+    if word in counts:
+        counts[word] = 1
+    else:
+        counts[word] += 1
+
+When a word is NOT in the dictionary yet, the code tries to add 1 to a key
+that doesn't exist, which raises:
+    KeyError: 'Colorado'
+(If it didn't crash, repeated words would also be reset to 1.)
+
+Fix: swap the two branches:
+    if word in counts:
+        counts[word] += 1
+    else:
+        counts[word] = 1
+
+
+BUG 4 - Line 64 - Sorting by the wrong part of the tuple
+--------------------------------------------------------
+    pairs = sorted(counts.items(), key=lambda pair: pair[0], reverse=True)
+
+Each pair is (word, count). pair[0] is the word, so the "top 5" are just the
+5 words that come last alphabetically, not the most frequent ones.
+
+Fix:
+    pairs = sorted(counts.items(), key=lambda pair: pair[1], reverse=True)
+
+
+BUG 5 - Line 72 - Binary search loop condition misses the last element
+----------------------------------------------------------------------
+    while low < high:
+
+When low == high, one candidate element is left to check, but the loop stops
+early and returns -1. Words that are in the list are reported as "not found"
+(with the other bugs fixed: "agriculture" and "Fort").
+
+Fix:
+    while low <= high:
+
+
+EXPECTED OUTPUT AFTER ALL 5 FIXES
+---------------------------------
+Sentences:    6
+Total words:  67
+Unique words: 40
+
+Top 5 words:
+  the         10
+  is          4
+  and         4
+  university  3
+  students    3
+
+Word search:
+  'Rams' found at position 29
+  'university' found at position 38
+  'Trails' found at position 37
+  'python' was not found
+  'agriculture' found at position 0
+  'Fort' found at position 18
+
+Note: 'python' is NOT in the passage, so "was not found" is correct for it.
