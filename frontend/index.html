@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-<head></head>
+<head>
+</head>
 <title>Agenti AI Customized Interface</title>
 <body>
 	
@@ -11,15 +12,16 @@
 		<div style="
 			display: flex; height: 99vh; width: 99vw;
 				">
+			<!-- left box -->
 			<div style="
 				background-color: rgb(19, 41, 67); width: 15vh; padding: 70px; position: relative;">
 			</div>
 
-			<!-- box inside -->
+			<!-- right box -->
 			<div style="
 				width: 81.5%; height: 100%;
 				aspect-ratio: 16/9;
-				background-color: rgb(254, 254, 255);
+				background-color: rgb(246, 250, 255);
 				display: flex;
 				flex-direction: column;
 				justify-content: flex-end; 
@@ -30,23 +32,45 @@
 					">
 				</div> -->
 
-				<input type="text" placeholder="Type something..." style="
-					width: 90%; height: 120px; background-color: rgb(59, 84, 134);
-					border: none; outline: none;
-					color: white; font-size: 16px; padding: 0 20px;
+				<input type="text" placeholder="Enter your request..." style="
+					width: 90%; height: 120px; background-color: rgb(255, 255, 255);
+					border: 2px solid rgba(19, 41, 67, 0.15); outline: black;
+					color: rgb(19, 41, 67); font-size: 16px; padding: 0 20px;
 					border-radius: 8px;
 					position: relative;
 					bottom: 20px;
 					">
-
+					
 			
 			</div>
 
 			<!-- header box -->
 			<div style="
 				position: absolute; top: 0; left: 0; width: 100%; height: 60px; background-color: rgba(255, 255, 255, 0.03); 
-				border-bottom: 2px solid rgba(0, 0, 0, 0.04);">
+				border-bottom: 2px solid rgba(0, 0, 0, 0.04);
+				display: flex; align-items: center; display: flex; align-items: center; gap: 600px; padding: 0 28px 0 400px;">
+
+				<strong style="color: rgb(19, 41, 67); font-size: 15px;">Agentic AI Interface</strong>
+
+				<div style="display: flex; gap: 4px; background: rgba(19,41,67,0.07); border-radius: 9px; padding: 3px;">
+					<button onclick="setDensity(this)" style="border: none; background: #2563eb; color: white; padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Low</button>
+					<button onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Medium</button>
+					<button onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">High</button>
+					<button onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Full</button>
+				</div>
+
 			</div>
+
+			<script>
+			function setDensity(btn) {
+				document.querySelectorAll('.density-toggle button').forEach(b => {
+					b.style.background = 'transparent';
+					b.style.color = 'rgba(19,41,67,0.5)';
+				});
+				btn.style.background = '#2563eb';
+				btn.style.color = 'white';
+			}
+			</script>
 
 		</div>
 
