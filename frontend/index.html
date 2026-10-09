@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-<head></head>
+<head>
+</head>
 <title>Agenti AI Customized Interface</title>
 <body>
 	
@@ -46,8 +47,29 @@
 			<!-- header box -->
 			<div style="
 				position: absolute; top: 0; left: 0; width: 100%; height: 60px; background-color: rgba(255, 255, 255, 0.03); 
-				border-bottom: 2px solid rgba(0, 0, 0, 0.04);">
+				border-bottom: 2px solid rgba(0, 0, 0, 0.04);
+				display: flex; align-items: center; display: flex; align-items: center; gap: 600px; padding: 0 28px 0 400px;">
+
+				<strong style="color: rgb(19, 41, 67); font-size: 15px;">Agentic AI Interface</strong>
+
+				<div style="display: flex; gap: 4px; background: rgba(19,41,67,0.07); border-radius: 9px; padding: 3px;">
+					<button onclick="setDensity(this)" style="border: none; background: #2563eb; color: white; padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Minimal</button>
+					<button onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Moderate</button>
+					<button onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">High</button>
+				</div>
+
 			</div>
+
+			<script>
+			function setDensity(btn) {
+				document.querySelectorAll('.density-toggle button').forEach(b => {
+					b.style.background = 'transparent';
+					b.style.color = 'rgba(19,41,67,0.5)';
+				});
+				btn.style.background = '#2563eb';
+				btn.style.color = 'white';
+			}
+			</script>
 
 		</div>
 
