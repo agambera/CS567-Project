@@ -46,8 +46,7 @@ class Student:
         """Return the average of the student's scores (0.0 if no scores)."""
         if len(self.scores) == 0:
             return 0.0
-        total = sum(self.scores)
-        return total / len(self.scores)
+        return sum(self.scores) / len(self.scores)
 
     def letter_grade(self):
         """Return the letter grade that matches the student's average."""
