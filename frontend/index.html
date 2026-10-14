@@ -1,95 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-<head></head>
+<head>
+    <script src="https://unpkg.com/lucide@latest"></script>
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		body { overflow: hidden; }
+	</style>
+</head>
 <title>Agenti AI Customized Interface</title>
 <body>
 
-	<div style="position: relative; height: 98vh;">
+    <div style="display: flex; height: 100vh; width: 100vw; overflow: hidden;">
 
-		<!-- whole page setup -->
-		<div style="display: flex; height: 99vh; width: 99vw;">
+        <!-- left box -->
+        <div style="background-color: rgb(19, 41, 67); width: 200px; flex-shrink: 0;"></div>
 
-			<!-- left box -->
-			<div style="background-color: rgb(19, 41, 67); width: 15vh; padding: 70px; position: relative;"></div>
+        <!-- right box -->
+        <div style="
+            flex: 1; height: 100%;
+            background-color: rgb(246, 250, 255);
+            display: flex;
+            flex-direction: column;">
 
-			<!-- right box -->
-			<div style="
-				width: 81.5%; height: 100%;
-				background-color: rgb(246, 250, 255);
-				display: flex;
-				flex-direction: column;
-				justify-content: flex-end;
-				align-items: center;">
+            <!-- header -->
+            <div style="
+                width: 100%; height: 60px; flex-shrink: 0;
+                background-color: rgba(255,255,255,0.6);
+                border-bottom: 2px solid rgba(0,0,0,0.04);
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 0 28px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="layout-dashboard" style="width: 20px; height: 20px; color: #2563eb;"></i>
+                    <strong style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 17px; font-weight: 600; color: rgb(19,41,67);">Agentic AI Interface</strong>
+                </div>
+                <div style="display: flex; gap: 4px; background: rgba(19,41,67,0.07); border-radius: 9px; padding: 3px;">
+                    <button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Low</button>
+                    <button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Medium</button>
+                    <button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">High</button>
+                    <button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Full</button>
+                </div>
+            </div>
 
-				<!-- panels (hidden until Full) -->
-				<div id="panels" style="display: none; width: 90%; flex: 1; gap: 18px; margin-top: 80px; margin-bottom: 60px;">
-					<!-- Agent Output -->
-					<div style="flex: 1; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px;"></div>
-					<!-- Right column -->
-					<div style="width: 300px; display: flex; flex-direction: column; gap: 14px;">
-						<div style="flex: 1; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px;"></div>
-						<div style="flex: 1; background: #f0f1ff; border: 2px solid rgba(79,70,229,0.13); border-radius: 14px;"></div>
-					</div>
-				</div>
+            <!-- panels (hidden until Full) -->
+            <div id="panels" style="display: none; flex: 1; gap: 18px; margin: 20px 5% 20px;">
+                <div style="flex: 1; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px;"></div>
+                <div style="width: 300px; display: flex; flex-direction: column; gap: 14px;">
+                    <div style="flex: 1; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px;"></div>
+                    <div style="flex: 1; background: #f0f1ff; border: 2px solid rgba(79,70,229,0.13); border-radius: 14px;"></div>
+                </div>
+            </div>
 
-				<!-- input bar -->
-				<div style="
-					width: 90%; background-color: rgb(255, 255, 255);
-					border: 2px solid rgba(19, 41, 67, 0.15);
-					border-radius: 8px;
-					display: flex; align-items: center;
-					padding: 0 10px;
-					position: relative; bottom: 20px;">
-					<input type="text" placeholder="Enter your request..." style="
-						flex: 1; height: 60px; border: none; outline: none;
-						background: transparent;
-						color: rgb(19, 41, 67); font-size: 16px; padding: 0 10px;">
-					<button style="
-						width: 38px; height: 38px;
-						background: #2563eb; border: none; border-radius: 8px;
-						cursor: pointer; color: white; font-size: 18px;">➤</button>
-				</div>
+            <!-- spacer when panels hidden -->
+            <div style="flex: 1;"></div>
 
-			</div>
+            <!-- input bar -->
+            <div style="
+                width: 90%; margin: 0 auto 20px;
+                background-color: rgb(255, 255, 255);
+                border: 2px solid rgba(19, 41, 67, 0.15);
+                border-radius: 8px;
+                display: flex; align-items: center;
+                padding: 0 10px;">
+                <input type="text" placeholder="Enter your request..." style="
+                    flex: 1; height: 60px; border: none; outline: none;
+                    background: transparent;
+                    color: rgb(19, 41, 67); font-size: 16px; padding: 0 10px;">
+                <button style="
+                    width: 38px; height: 38px;
+                    background: #2563eb; border: none; border-radius: 8px;
+                    cursor: pointer; color: white; font-size: 18px;">➤</button>
+            </div>
 
-			<!-- header box -->
-			<div style="
-				position: absolute; top: 0; left: 0; width: 100%; height: 60px;
-				background-color: rgba(255, 255, 255, 0.03);
-				border-bottom: 2px solid rgba(0, 0, 0, 0.04);
-				display: flex; align-items: center; gap: 80vh; padding: 0 28px 0 300px;">
-				<strong style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-weight: 600;">Agentic AI Interface</strong>
-				<div style="display: flex; gap: 4px; background: rgba(19,41,67,0.07); border-radius: 9px; padding: 3px;">
-					<button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Low</button>
-					<button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Medium</button>
-					<button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">High</button>
-					<button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Full</button>
-				</div>
-			</div>
+        </div>
+    </div>
 
-		</div>
+    <script>
+        function setDensity(btn) {
+            btn.parentElement.querySelectorAll('button').forEach(b => {
+                b.style.background = 'transparent';
+                b.style.color = 'rgba(19,41,67,0.5)';
+            });
+            btn.style.background = '#2563eb';
+            btn.style.color = 'white';
 
-	</div>
+            const panels = document.getElementById('panels');
+            panels.style.display = btn.textContent === 'Full' ? 'flex' : 'none';
+        }
 
-	<script>
-	function setDensity(btn) {
-		btn.parentElement.querySelectorAll('button').forEach(b => {
-			b.style.background = 'transparent';
-			b.style.color = 'rgba(19,41,67,0.5)';
-		});
-		btn.style.background = '#2563eb';
-		btn.style.color = 'white';
-
-		const panels = document.getElementById('panels');
-		panels.style.display = btn.textContent === 'Full' ? 'flex' : 'none';
-	}
-
-	// select Low by default on page load
-	window.onload = function() {
-		const buttons = document.querySelectorAll('.density-btn');
-		setDensity(buttons[0]);
-	}
-	</script>
+        window.onload = function() {
+            setDensity(document.querySelectorAll('.density-btn')[0]);
+            lucide.createIcons();
+        }
+    </script>
 
 </body>
 </html>
