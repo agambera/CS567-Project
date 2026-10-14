@@ -113,22 +113,25 @@
             const textBox = document.getElementById('message');
             const message = textBox.value.trim();
 
-            // Nothing happens until the user types START
+            // Nothing happens until the user types START (any capitalization works)
             if (!started) {
-                if (message === 'START') {
+                if (message.toUpperCase() === 'START') {
                     textBox.value = '';
                     start();
+                } else {
+                    //clear ye olde box
+                    textBox.value = '';
                 }
                 return;
             }
 
-            // After START, every message goes into the message box
+            // After START, every message goes into the message box COD style :D
             if (message === '') return;
             textBox.value = '';
             addMessage(message);
         }
 
-        // Loads the code, then shows the status and starts the timer
+        // Loads the code, then shows the status and starts the countdown of doom
         async function start() {
             const codeBox = document.getElementById('code');
 
