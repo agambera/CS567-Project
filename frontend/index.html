@@ -43,11 +43,11 @@
             </div>
 
             <!-- panels (hidden until Full) -->
-            <div id="panels" style="display: none; flex: 1; gap: 18px; margin: 20px 5% 20px; align-items: stretch;">
-                <div style="flex: 1; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px;">
+            <div id="panels" style="display: none; flex: 1; min-height: 0; gap: 18px; margin: 20px 5% 20px; align-items: stretch;">
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px;">
 					<!-- scrollable box -->
-					<div style="
-						flex: 1; overflow-y: auto;
+					<div id="code" style="
+						flex: 1; min-height: 0; overflow: auto;
 						padding: 20px;
 						display: flex; flex-direction: column; gap: 12px;">
 					</div>
@@ -66,11 +66,11 @@
                 border-radius: 8px;
                 display: flex; align-items: center;
                 padding: 0 10px;">
-                <input type="text" placeholder="Enter your request..." style="
+                <input id="message" type="text" placeholder="Enter your request..." onkeydown="if (event.key === 'Enter') send()" style="
                     flex: 1; height: 60px; border: none; outline: none;
                     background: transparent;
                     color: rgb(19, 41, 67); font-size: 16px; padding: 0 10px;">
-                <button style="
+                <button onclick="send()" style="
                     width: 38px; height: 38px;
                     background: #2563eb; border: none; border-radius: 8px;
                     cursor: pointer; color: white; font-size: 18px;">➤</button>
@@ -90,6 +90,54 @@
 
             const panels = document.getElementById('panels');
             panels.style.display = btn.textContent === 'Full' ? 'flex' : 'none';
+        }
+
+        // Where the backend is running (see backend/server.py)
+        const serverUrl = 'http://localhost:8000';
+
+        // Which file from backend/SampleCode to show
+        const fileToShow = 'gradebook.py';
+
+        // Runs when the user presses Enter or clicks the send button
+        async function send() {
+            const textBox = document.getElementById('message');
+            const codeBox = document.getElementById('code');
+
+            // Do nothing if the text box is empty
+            if (textBox.value.trim() === '') return;
+            textBox.value = '';
+
+            try {
+                // Ask the backend for the file
+                const response = await fetch(serverUrl + '/code/' + fileToShow);
+                const result = await response.json();
+
+                if (!response.ok) {
+                    codeBox.textContent = result.error;
+                    return;
+                }
+
+                showCode(result.name, result.code);
+            } catch (error) {
+                codeBox.textContent = 'Could not reach the server. Is backend/server.py running?';
+            }
+        }
+
+        // Puts the file name and the code into the scrollable box
+        function showCode(fileName, code) {
+            const codeBox = document.getElementById('code');
+
+            const title = document.createElement('div');
+            title.textContent = fileName;
+            title.style.cssText = 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; font-weight: 600; color: rgb(19,41,67);';
+
+            const codeText = document.createElement('pre');
+            codeText.textContent = code;
+            codeText.style.cssText = 'font-family: Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; color: rgb(19,41,67);';
+
+            // Clear out anything that was there before, then add the new code
+            codeBox.innerHTML = '';
+            codeBox.append(title, codeText);
         }
 
         window.onload = function() {
