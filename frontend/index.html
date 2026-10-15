@@ -100,7 +100,7 @@
         }
 
         // Where the backend is running (see backend/server.py)
-        const serverUrl = 'http://localhost:8000';
+        const serverUrl = 'http://localhost:1234';
 
         // Which file from backend/SampleCode to show
         const fileToShow = 'gradebook.py';
@@ -143,7 +143,7 @@
                 if (!response.ok) {
                     codeBox.textContent = result.error;
                     return;
-                }
+                } 
 
                 showCode(result.name, result.code);
 

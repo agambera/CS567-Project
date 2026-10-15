@@ -14,7 +14,7 @@ import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 
-PORT = 8000
+PORT = 1234
 
 # Folders this server uses
 this_folder = Path(__file__).resolve().parent
