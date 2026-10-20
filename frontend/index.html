@@ -21,7 +21,7 @@
             background-color: rgb(246, 250, 255);
             display: flex;
             flex-direction: column;
-			justify-content: space-between">
+            justify-content: space-between">
 
             <!-- header -->
             <div style="
@@ -45,42 +45,31 @@
             <!-- panels (hidden until Full) -->
             <div id="panels" style="display: none; flex: 1; min-height: 0; gap: 18px; margin: 20px 5% 20px; align-items: stretch;">
                 <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px;">
-					<!-- scrollable box -->
-					<div id="code" style="
-						flex: 1; min-height: 0; overflow: auto;
-						padding: 20px;
-						display: flex; flex-direction: column; gap: 12px;">
-					</div>
-				</div>
-                <div style="width: 300px; display: flex; flex-direction: column; gap: 14px;">
-                    <!-- status box (empty until the code shows up) -->
-                    <div style="flex: 1 1 0px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: rgb(19,41,67);">
-                        <!-- status header bar (hidden until START) -->
-                        <div id="status" style="display: none; padding: 12px 20px; background: rgba(37,99,235,0.08); border-bottom: 2px solid rgba(37,99,235,0.15); font-size: 14px; font-weight: 600; color: #2563eb;"></div>
-                        <!-- timer box (hidden until START) -->
-                        <div id="timer" style="display: none; margin: 20px; padding: 14px 0; border: 2px solid rgba(19,41,67,0.15); border-radius: 10px; text-align: center; font-size: 28px; font-weight: 600;"></div>
+                    <!-- scrollable box -->
+                    <div id="code" style="
+                        flex: 1; min-height: 0; overflow: auto;
+                        padding: 20px;
+                        display: flex; flex-direction: column; gap: 12px;">
                     </div>
-                    <!-- message box (newest message on top, older ones get cut off at the bottom) -->
+                </div>
+                <div style="width: 300px; display: flex; flex-direction: column; gap: 14px;">
+                    <!-- status box -->
+                    <div style="flex: 1 1 0px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: rgb(19,41,67);">
+                        <div id="status" style="display: none; padding: 12px 20px; background: rgba(37,99,235,0.08); border-bottom: 2px solid rgba(37,99,235,0.15); font-size: 14px; font-weight: 600; color: #2563eb;"></div>
+                        <div id="timer" style="display: none; margin: 20px; padding: 14px 0; border: 2px solid rgba(19,41,67,0.15); border-radius: 10px; text-align: center; font-size: 28px; font-weight: 600;"></div>
+                        <button onclick="togglePause()" id="pause-btn" style="display: none; width: 36px; height: 36px; border-radius: 7px; border: none; background: rgba(19,41,67,0.07); color: rgb(19,41,67); cursor: pointer; align-items: center; justify-content: center; margin: 0 auto;">
+                            <i id="pause-icon" data-lucide="pause" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                    <!-- message box -->
                     <div id="messages" style="flex: 1 1 0px; min-height: 0; overflow: hidden; padding: 14px; display: flex; flex-direction: column; gap: 8px; background: #f0f1ff; border: 2px solid rgba(79,70,229,0.13); border-radius: 14px;">
-						<!--TODO: add bugs info here later-->
-						<div style="flex: 1;"></div>
-						<div style="
-							display: flex; gap: 8px; justify-content: center;
-							padding: 12px 16px;">
-							<button style="
-								padding: 5px 14px; border-radius: 6px; border: none;
-								background: #dcfce7; color: #16a34a;
-								font-size: 12px; font-weight: 600; cursor: pointer;">
-								Correct
-							</button>
-							<button style="
-								padding: 5px 14px; border-radius: 6px; border: none;
-								background: #fee2e2; color: #dc2626;
-								font-size: 12px; font-weight: 600; cursor: pointer;">
-								Incorrect
-							</button>
-						</div>
-					</div>
+                        <!--TODO: add bugs info here later-->
+                        <div style="flex: 1;"></div>
+                        <div style="display: flex; gap: 8px; justify-content: center; padding: 12px 16px;">
+                            <button style="padding: 5px 14px; border-radius: 6px; border: none; background: #dcfce7; color: #16a34a; font-size: 12px; font-weight: 600; cursor: pointer;">Correct</button>
+                            <button style="padding: 5px 14px; border-radius: 6px; border: none; background: #fee2e2; color: #dc2626; font-size: 12px; font-weight: 600; cursor: pointer;">Incorrect</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -96,21 +85,37 @@
                     flex: 1; height: 60px; border: none; outline: none;
                     background: transparent;
                     color: rgb(19, 41, 67); font-size: 16px; padding: 0 10px;">
-                <button style="
-					width: 38px; height: 38px;
-					background: #2563eb; border: none; border-radius: 8px;
-					cursor: pointer; color: white; font-size: 18px;">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-						<line x1="22" y1="2" x2="11" y2="13"/>
-						<polygon points="22 2 15 22 11 13 2 9 22 2"/>
-					</svg>
-				</button>
+                <button onclick="send()" style="width: 38px; height: 38px; background: #2563eb; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
             </div>
 
         </div>
     </div>
 
     <script>
+        let paused = false;
+        let timer = null;
+        let started = false;
+        const timerLength = 300;
+        const serverUrl = 'http://localhost:1234';
+        const fileToShow = 'gradebook.py';
+
+        function togglePause() {
+            const icon = document.getElementById('pause-icon');
+            if (paused) {
+                paused = false;
+                icon.setAttribute('data-lucide', 'pause');
+            } else {
+                paused = true;
+                icon.setAttribute('data-lucide', 'play');
+            }
+            lucide.createIcons();
+        }
+
         function setDensity(btn) {
             btn.parentElement.querySelectorAll('button').forEach(b => {
                 b.style.background = 'transparent';
@@ -118,60 +123,37 @@
             });
             btn.style.background = '#2563eb';
             btn.style.color = 'white';
-
             const panels = document.getElementById('panels');
             panels.style.display = btn.textContent === 'Full' ? 'flex' : 'none';
         }
 
-        // Where the backend is running (see backend/server.py)
-        const serverUrl = 'http://localhost:1234';
-
-        // Which file from backend/SampleCode to show
-        const fileToShow = 'gradebook.py';
-
-        // Becomes true once the user types START
-        let started = false;
-
-        // Runs when the user presses Enter or clicks the send button
         function send() {
             const textBox = document.getElementById('message');
             const message = textBox.value.trim();
-
-            // Nothing happens until the user types START (any capitalization works)
             if (!started) {
                 if (message.toUpperCase() === 'START') {
                     textBox.value = '';
                     start();
                 } else {
-                    //clear ye olde box
                     textBox.value = '';
                 }
                 return;
             }
-
-            // After START, every message goes into the message box COD style :D
             if (message === '') return;
             textBox.value = '';
             addMessage(message);
         }
 
-        // Loads the code, then shows the status and starts the countdown of doom
         async function start() {
             const codeBox = document.getElementById('code');
-
             try {
-                // Ask the backend for the file
                 const response = await fetch(serverUrl + '/code/' + fileToShow);
                 const result = await response.json();
-
                 if (!response.ok) {
                     codeBox.textContent = result.error;
                     return;
-                } 
-
+                }
                 showCode(result.name, result.code);
-
-                // The code is up, so the agent moves on to reviewing it
                 showStatus('Code Review');
                 startTimer();
                 started = true;
@@ -180,65 +162,47 @@
             }
         }
 
-        // Puts the file name and the code into the scrollable box
         function showCode(fileName, code) {
             const codeBox = document.getElementById('code');
-
             const title = document.createElement('div');
             title.textContent = fileName;
             title.style.cssText = 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; font-weight: 600; color: rgb(19,41,67);';
-
             const codeText = document.createElement('pre');
             codeText.textContent = code;
             codeText.style.cssText = 'font-family: Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; color: rgb(19,41,67);';
-
-            // Clear out anything that was there before, then add the new code
             codeBox.innerHTML = '';
             codeBox.append(title, codeText);
         }
 
-        // Shows what the agent is doing in the upper right box
         function showStatus(text) {
             const statusBar = document.getElementById('status');
             statusBar.textContent = 'STATUS: ' + text;
             statusBar.style.display = 'block';
         }
 
-        // Adds a message to the top of the message box (bottom right)
         function addMessage(text) {
             const messageBox = document.getElementById('messages');
-
             const bubble = document.createElement('div');
             bubble.textContent = text;
             bubble.style.cssText = 'flex-shrink: 0; padding: 8px 12px; background: white; border-radius: 8px; overflow-wrap: anywhere; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; color: rgb(19,41,67);';
-
-            // prepend puts it above the older messages
             messageBox.prepend(bubble);
         }
 
-        // How long the timer runs for, in seconds (2 minutes)
-        const timerLength = 120;
-        let timer = null;
-
-        // Counts down from 2:00 to 0:00 under the status.
-        // Sending another message starts it over.
         function startTimer() {
             const timerText = document.getElementById('timer');
             timerText.style.display = 'block';
+            document.getElementById('pause-btn').style.display = 'flex';
             let secondsLeft = timerLength;
-
-            // Stop any timer that is already running
             clearInterval(timer);
 
             function update() {
-                const minutes = Math.floor(secondsLeft / 60);
-                const seconds = String(secondsLeft % 60).padStart(2, '0');
-                timerText.textContent = minutes + ':' + seconds;
-
-                if (secondsLeft === 0) {
-                    clearInterval(timer);
+                if (!paused) {
+                    const minutes = Math.floor(secondsLeft / 60);
+                    const seconds = String(secondsLeft % 60).padStart(2, '0');
+                    timerText.textContent = minutes + ':' + seconds;
+                    if (secondsLeft === 0) clearInterval(timer);
+                    secondsLeft--;
                 }
-                secondsLeft--;
             }
 
             update();
