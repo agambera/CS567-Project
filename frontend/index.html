@@ -61,7 +61,26 @@
                         <div id="timer" style="display: none; margin: 20px; padding: 14px 0; border: 2px solid rgba(19,41,67,0.15); border-radius: 10px; text-align: center; font-size: 28px; font-weight: 600;"></div>
                     </div>
                     <!-- message box (newest message on top, older ones get cut off at the bottom) -->
-                    <div id="messages" style="flex: 1 1 0px; min-height: 0; overflow: hidden; padding: 14px; display: flex; flex-direction: column; gap: 8px; background: #f0f1ff; border: 2px solid rgba(79,70,229,0.13); border-radius: 14px;"></div>
+                    <div id="messages" style="flex: 1 1 0px; min-height: 0; overflow: hidden; padding: 14px; display: flex; flex-direction: column; gap: 8px; background: #f0f1ff; border: 2px solid rgba(79,70,229,0.13); border-radius: 14px;">
+						<!--TODO: add bugs info here later-->
+						<div style="flex: 1;"></div>
+						<div style="
+							display: flex; gap: 8px; justify-content: center;
+							padding: 12px 16px;">
+							<button style="
+								padding: 5px 14px; border-radius: 6px; border: none;
+								background: #dcfce7; color: #16a34a;
+								font-size: 12px; font-weight: 600; cursor: pointer;">
+								Correct
+							</button>
+							<button style="
+								padding: 5px 14px; border-radius: 6px; border: none;
+								background: #fee2e2; color: #dc2626;
+								font-size: 12px; font-weight: 600; cursor: pointer;">
+								Incorrect
+							</button>
+						</div>
+					</div>
                 </div>
             </div>
 
