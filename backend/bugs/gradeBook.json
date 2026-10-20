@@ -1,0 +1,7 @@
+{
+    "bugs": [
+        { "number": 1, "line": 34, "buggy": "def __init__(self, name, scores=[])", "fix": "scores=None, then check if None" },
+        { "number": 2, "line": 50, "buggy": "for i in range(1, len(self.scores))", "fix": "for i in range(len(self.scores))" },
+        { "number": 3, "line": 59, "buggy": "if/elif conditions in the wrong order", "fix": "check 80 before 70"}
+    ]
+}

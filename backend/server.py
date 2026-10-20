@@ -20,6 +20,7 @@ PORT = 1234
 this_folder = Path(__file__).resolve().parent
 website_folder = this_folder.parent / "frontend"
 code_folder = this_folder / "SampleCode"
+bug_folder = this_folder / "bugs"
 
 
 class Server(SimpleHTTPRequestHandler):
@@ -38,6 +39,10 @@ class Server(SimpleHTTPRequestHandler):
         if self.path.startswith("/code/"):
             file_name = self.path.replace("/code/", "", 1)
             self.send_code(file_name)
+        # The page asks for bugs by going to /bugs/<file name>
+        elif self.path.startswith("/bugs/"):
+            file_name = self.path.replace("/bugs/", "", 1)
+            self.send_bugs(file_name)
         else:
             # Anything else is a normal website file (index.html, etc.)
             super().do_GET()
@@ -52,6 +57,14 @@ class Server(SimpleHTTPRequestHandler):
             return
 
         self.send_reply(200, {"name": file.name, "code": file.read_text()})
+
+    def send_bugs(self, file_name):
+        file = (bug_folder / file_name).resolve()
+        if file.parent != bug_folder or file.suffix != ".json" or not file.exists():
+            self.send_reply(404, {"error": "Could not find " + file_name})
+            return
+
+        self.send_reply(200, {"name": file.name, "bugs": json.loads(file.read_text())["bugs"]})
 
     def send_reply(self, status, data):
         reply = json.dumps(data).encode()
