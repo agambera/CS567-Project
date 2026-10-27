@@ -81,6 +81,8 @@
                         <button onclick="togglePause()" id="pause-btn" style="display: none; width: 36px; height: 36px; border-radius: 7px; border: none; background: rgba(19,41,67,0.07); color: rgb(19,41,67); cursor: pointer; align-items: center; justify-content: center; margin: 0 auto;">
                             <i id="pause-icon" data-lucide="pause" style="width: 16px; height: 16px;"></i>
                         </button>
+                        <!-- simple working indicator (Low's version of the agent plan) -->
+                        <div id="agent-working" style="align-items: center; justify-content: center; gap: 8px; padding: 16px 20px; font-size: 13px;"></div>
                         <!-- agent plan (filled in when the bugfix starts) -->
                         <div id="agent-steps" style="flex-direction: column; gap: 7px; padding: 16px 20px; font-size: 13px;"></div>
                     </div>
@@ -136,9 +138,9 @@
 		// then add it to every level that should show it.
 		// Names that are not in allElements (like 'agent-replies' and 'line-highlight')
 		// are features with no box of their own; the code checks them with has().
-		const allElements = ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-steps', 'terminal'];
+		const allElements = ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-working', 'agent-steps', 'terminal'];
 		const levels = {
-			Low:    ['code-panel', 'status-box', 'bug-card'],
+			Low:    ['code-panel', 'status-box', 'bug-card', 'agent-working'],
 			High:   ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-replies', 'line-highlight', 'agent-steps', 'terminal'],
 		};
 		let level = 'Low';
@@ -348,6 +350,7 @@
 		async function runBugfix() {
 			fixStarted = true;
 			showStatus('Agent Working');
+			showWorking(true);
 			showSteps();
 			terminalLine('[agent] Task: find and fix bugs in ' + fileToShow, colors.agent);
 			await wait(500);
@@ -383,6 +386,7 @@
 			await wait(500);
 			setStep(3, 'done');
 
+			showWorking(false);
 			showStatus('Code Review');
 			startTimer();
 			showBug(0);
@@ -446,6 +450,16 @@
             const statusBar = document.getElementById('status');
             statusBar.textContent = 'STATUS: ' + text;
             statusBar.style.display = 'block';
+        }
+
+        // Simple indicator: a spinner while the agent works, a check mark when done
+        function showWorking(working) {
+            const box = document.getElementById('agent-working');
+            if (working) {
+                box.innerHTML = '<span class="spin" style="width: 14px; height: 14px; border: 2px solid rgba(37,99,235,0.2); border-top-color: #2563eb; border-radius: 50%;"></span><span style="color: rgb(19,41,67); font-weight: 600;">Agent is working...</span>';
+            } else {
+                box.innerHTML = '<span style="color: #16a34a;">✓</span><span style="color: rgba(19,41,67,0.6);">Bugs found</span>';
+            }
         }
 
         // Plan checklist in the status box
