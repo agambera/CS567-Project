@@ -98,13 +98,14 @@
 
     <script>
         let paused = false;
-        let timer = null;
-        let started = false;
-        const timerLength = 300;
-        const serverUrl = 'http://localhost:1234';
-        const fileToShow = 'gradebook.py';
-        const fileBugs = 'gradeBook.json';
-
+		let timer = null;
+		let started = false;
+		let bugs = [];
+		let currentBugIndex = 0;
+		const timerLength = 300;
+		const serverUrl = 'http://localhost:1234';
+		const fileToShow = 'gradebook.py';
+		const fileBugs = 'gradeBook.json';
         function togglePause() {
             const icon = document.getElementById('pause-icon');
             if (paused) {
@@ -145,24 +146,24 @@
             addMessage(message);
         }
 
-        async function start() {
-            const codeBox = document.getElementById('code');
-            try {
-                const response = await fetch(serverUrl + '/code/' + fileToShow);
-                const result = await response.json();
-                if (!response.ok) {
-                    codeBox.textContent = result.error;
-                    return;
-                }
-                showCode(result.name, result.code);
-                await showBugs();
-                showStatus('Code Review');
-                startTimer();
-                started = true;
-            } catch (error) {
-                codeBox.textContent = 'Could not reach the server. Is backend/server.py running?';
-            }
-        }
+		async function start() {
+			const codeBox = document.getElementById('code');
+			try {
+				const response = await fetch(serverUrl + '/code/' + fileToShow);
+				const result = await response.json();
+				if (!response.ok) {
+					codeBox.textContent = result.error;
+					return;
+				}
+				showCode(result.name, result.code);
+				await loadBugs();
+				showStatus('Code Review');
+				startTimer();
+				started = true;
+			} catch (error) {
+				codeBox.textContent = 'Could not reach the server. Is backend/server.py running?';
+			}
+		}
 
         function showCode(fileName, code) {
             const codeBox = document.getElementById('code');
@@ -176,17 +177,48 @@
             codeBox.append(title, codeText);
         }
 
-        async function showBugs() {
-            const response = await fetch(serverUrl + '/bugs/' + fileBugs);
-            const result = await response.json();
-            if (!response.ok) {
-                addMessage(result.error);
-                return;
-            }
-            for (const bug of [...result.bugs].reverse()) {
-                addMessage('Bug ' + bug.number + ' (line ' + bug.line + '): ' + bug.buggy + ' -> ' + bug.fix);
-            }
-        }
+        async function loadBugs() {
+			const response = await fetch(serverUrl + '/bugs/' + fileBugs);
+			const result = await response.json();
+			if (!response.ok) return;
+			bugs = result.bugs;
+			showBug(0);
+		}
+
+		function showBug(index) {
+			const bug = bugs[index];
+			if (!bug) return;
+			const messageBox = document.getElementById('messages');
+			const bugDiv = document.createElement('div');
+			bugDiv.style.cssText = 'padding: 10px 12px; background: white; border-radius: 8px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; color: rgb(19,41,67); display: flex; flex-direction: column; gap: 6px;';
+			bugDiv.innerHTML = `
+				<div style="font-weight: 600; color: #2563eb;">Bug ${bug.number} of ${bugs.length} — Line ${bug.line}</div>
+				<div><strong>Found:</strong> <code>${bug.buggy}</code></div>
+				<div><strong>Fix:</strong> <code>${bug.fix}</code></div>
+				<div style="color: rgba(19,41,67,0.6); font-size: 12px;">${bug.explanation}</div>
+			`;
+			messageBox.innerHTML = '';
+			messageBox.appendChild(bugDiv);
+
+			// re-add the buttons
+			const btnDiv = document.createElement('div');
+			btnDiv.style.cssText = 'display: flex; gap: 8px; justify-content: center; padding: 12px 16px; margin-top: auto;';
+			btnDiv.innerHTML = `
+				<button onclick="answerBug(true)" style="padding: 5px 14px; border-radius: 6px; border: none; background: #dcfce7; color: #16a34a; font-size: 12px; font-weight: 600; cursor: pointer;">Correct</button>
+				<button onclick="answerBug(false)" style="padding: 5px 14px; border-radius: 6px; border: none; background: #fee2e2; color: #dc2626; font-size: 12px; font-weight: 600; cursor: pointer;">Incorrect</button>
+			`;
+			messageBox.appendChild(btnDiv);
+		}
+
+		function answerBug(correct) {
+			currentBugIndex++;
+			if (currentBugIndex < bugs.length) {
+				showBug(currentBugIndex);
+			} else {
+				const messageBox = document.getElementById('messages');
+				messageBox.innerHTML = '<div style="padding: 12px; font-family: -apple-system, sans-serif; font-size: 13px; color: rgb(19,41,67); font-weight: 600;">All bugs reviewed!</div>';
+			}
+		}
 
         function showStatus(text) {
             const statusBar = document.getElementById('status');
