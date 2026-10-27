@@ -59,9 +59,7 @@
                 </div>
                 <div style="display: flex; gap: 4px; background: rgba(19,41,67,0.07); border-radius: 9px; padding: 3px;">
                     <button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Low</button>
-                    <button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Medium</button>
                     <button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">High</button>
-                    <button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Full</button>
                 </div>
             </div>
 
@@ -141,11 +139,18 @@
 		const allElements = ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-steps', 'terminal'];
 		const levels = {
 			Low:    ['code-panel', 'status-box', 'bug-card'],
-			Medium: ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-replies', 'line-highlight'],
-			High:   ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-replies', 'line-highlight', 'agent-steps'],
-			Full:   ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-replies', 'line-highlight', 'agent-steps', 'terminal'],
+			High:   ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-replies', 'line-highlight', 'agent-steps', 'terminal'],
 		};
 		let level = 'Low';
+
+		// Phrases that start the bugfix. Capitals, spaces and dashes don't matter,
+		// so 'bug fix' also matches "bugfix", "Bug-Fix" and "BUG FIX".
+		const bugfixPhrases = [
+			'bug fix', 'bug fixes', 'fix bug', 'fix bugs', 'fix the bug', 'fix the bugs',
+			'find bugs', 'find the bugs', 'code fix', 'fix code', 'fix the code', 'fix my code',
+			'fix this', 'fix it', 'debug', 'debugging', 'troubleshoot',
+			'make it work', 'get it working', 'get it to work',
+		];
 
 		// Steps the agent goes through after a bugfix request
 		const stepNames = ['Read ' + fileToShow, 'Run the program', 'Analyze the code', 'Report bugs'];
@@ -213,7 +218,8 @@
             const textBox = document.getElementById('message');
             const message = textBox.value.trim();
             if (!started) {
-                if (message.toUpperCase() === 'START') {
+                // any message that contains "start" opens the session
+                if (message.toLowerCase().includes('start')) {
                     textBox.value = '';
                     start();
                 } else {
@@ -226,8 +232,8 @@
             addMessage(message);
             terminalLine('> ' + message, colors.user);
 
-            // any message that contains "bugfix" starts the agent
-            if (!fixStarted && message.toLowerCase().includes('bugfix')) {
+            // any message that asks for a bugfix starts the agent
+            if (!fixStarted && asksForBugfix(message)) {
                 agentSay('On it. I will look for bugs in ' + fileToShow + '.');
                 runBugfix();
             } else if (fixStarted) {
@@ -236,6 +242,16 @@
                 terminalLine('[agent] No task yet. Waiting for instructions.', colors.agent);
                 agentSay('I have ' + fileToShow + ' open. Let me know when you want me to start a bugfix.');
             }
+        }
+
+        // Does the message contain one of the bugfix phrases?
+        function asksForBugfix(message) {
+            const text = message.toLowerCase().replace(/[^a-z]+/g, ' ');
+            return bugfixPhrases.some(phrase => {
+                // whole words only; the space between words is optional
+                const pattern = new RegExp('\\b' + phrase.split(' ').join('\\s*') + '\\b');
+                return pattern.test(text);
+            });
         }
 
 		async function start() {
