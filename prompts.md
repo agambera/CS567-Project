@@ -174,6 +174,63 @@ leave out the final calls that wrote this file and the closing reply.
 
 **What was done:** Added the token usage section above, using the session log.
 
+## Prompt 11: Open the panels at every density level
+
+> for the server and the webpage, make it so all of the current elements opene when the
+> respective level is clicked. all current elements should be in low, med, high, etc.
+> currently only High works and the functionality must be copied over to the other
+> elements. PRIOR TO DOING ANY CODE refine this prompt and ask questions to make it more
+> flushed out
+
+Follow-up: "go ahead for this, but leave availability for more elements in Med High and Full"
+
+**Clarifying questions the AI asked, and the answers:**
+
+| Question | Answer |
+|----------|--------|
+| Only "Full" opened the panels in the code, not "High". Which was meant? | Full |
+| Same elements at every level, or different ones? | Different: Low has no message stack; Medium, High and Full show everything |
+| What happens if the level is changed after START? | Lock the level after START |
+| What should the server do with the level? | Accept it and log it, return the same data for now |
+
+**What was done:**
+- Every level now opens the panels. A `levels` table at the top of the script lists which
+  elements (`code-panel`, `status-box`, `bug-card`, `message-stack`) each level shows. To
+  add a new element, give it an id, add the id to `allElements`, and add it to the levels
+  that should show it.
+- Split the bottom-right box into `bug-card` and `message-stack` so they can be shown or
+  hidden separately. Typed messages are no longer wiped when the next bug appears.
+- The level buttons lock (and the unpicked ones fade) once START is typed. They unlock
+  again if START fails to reach the server.
+- The frontend sends `?level=<level>` with both requests. `server.py` reads it, logs it,
+  and strips it off before looking up the file. Removed old debug prints in `send_bugs`.
+
+## Prompt 12: More agentic elements and a bugfix trigger
+
+> can you add more sample elements that makes the interface feel more like you are
+> interacting with an agentic ai? for example add a box on the left that shows what you
+> would see in the terminal if asking an agent to debug the code. In addition i would like
+> the timer and bug snippets to not be shown until the user sends in a message that asks
+> for the agent to do a bug fix. (as long as the message contains bugfix at any point that
+> counts)
+
+**What was done:**
+- **Agent terminal** (left sidebar): types out commands, shows the real output of running
+  the buggy program, lists each bug it checks, and logs each Correct/Incorrect answer.
+  `server.py` has a new `/run/<file>` endpoint that actually runs the sample code (only
+  `.py` files in `SampleCode`, 10 second limit), so the traceback is real.
+- **Agent plan** checklist in the status box (Read, Run, Analyze, Report) that ticks off
+  as the agent works.
+- **Agent replies** in the message stack, with "thinking" dots before each one.
+- **Line highlighting**: the current bug's line is highlighted and scrolled into view.
+  Line numbers were added to the code viewer at every level.
+- **Bugfix trigger**: START only opens the file. The timer, plan, and bug cards wait for a
+  message containing "bugfix" (any capitalization). When all bugs are answered the timer
+  stops and the status says "Review Complete".
+- New elements by level: Low gets none of them; Medium adds agent replies and line
+  highlighting; High adds the plan checklist; Full adds the terminal. The agent takes the
+  same amount of time at every level, even when its terminal is hidden.
+
 ---
 
 ## Files Created or Changed

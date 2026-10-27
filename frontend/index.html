@@ -1,10 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="utf-8">
     <script src="https://unpkg.com/lucide@latest"></script>
 	<style>
 		* { margin: 0; padding: 0; box-sizing: border-box; }
 		body { overflow: hidden; }
+		@keyframes blink { 50% { opacity: 0; } }
+		@keyframes spin { to { transform: rotate(360deg); } }
+		@keyframes fade { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+		.cursor { animation: blink 1s step-end infinite; }
+		.spin { display: inline-block; animation: spin 1s linear infinite; }
+		.dot { animation: fade 1.2s infinite; }
+		.dot:nth-child(2) { animation-delay: 0.2s; }
+		.dot:nth-child(3) { animation-delay: 0.4s; }
 	</style>
 </head>
 <title>Agenti AI Customized Interface</title>
@@ -13,7 +22,21 @@
     <div style="display: flex; height: 100vh; width: 100vw; overflow: hidden;">
 
         <!-- left box -->
-        <div style="background-color: rgb(19, 41, 67); width: 200px; flex-shrink: 0;"></div>
+        <div id="sidebar" style="background-color: rgb(19, 41, 67); width: 200px; flex-shrink: 0; display: flex; padding: 14px;">
+            <!-- agent terminal -->
+            <div id="terminal" style="display: none; flex: 1; min-width: 0; flex-direction: column; overflow: hidden; background: #0b1220; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
+                <div style="display: flex; align-items: center; gap: 6px; padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                    <span style="width: 10px; height: 10px; border-radius: 50%; background: #f87171;"></span>
+                    <span style="width: 10px; height: 10px; border-radius: 50%; background: #facc15;"></span>
+                    <span style="width: 10px; height: 10px; border-radius: 50%; background: #4ade80;"></span>
+                    <span style="margin-left: 6px; font-family: Menlo, Consolas, monospace; font-size: 11px; color: rgba(255,255,255,0.5);">agent@cs567: ~/SampleCode</span>
+                </div>
+                <div id="terminal-body" style="flex: 1; min-height: 0; overflow-y: auto; padding: 10px 12px; font-family: Menlo, Consolas, monospace; font-size: 11px; line-height: 1.5; color: #cbd5e1;">
+                    <div style="color: rgba(255,255,255,0.5);">Agent ready. Waiting for START...</div>
+                    <span id="terminal-cursor" class="cursor" style="color: #4ade80;">&#9608;</span>
+                </div>
+            </div>
+        </div>
 
         <!-- right box -->
         <div style="
@@ -42,9 +65,9 @@
                 </div>
             </div>
 
-            <!-- panels (hidden until Full) -->
+            <!-- panels (hidden until a level is picked) -->
             <div id="panels" style="display: none; flex: 1; min-height: 0; gap: 18px; margin: 20px 5% 20px; align-items: stretch;">
-                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px;">
+                <div id="code-panel" style="flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px;">
                     <!-- scrollable box -->
                     <div id="code" style="
                         flex: 1; min-height: 0; overflow: auto;
@@ -54,21 +77,21 @@
                 </div>
                 <div style="width: 300px; display: flex; flex-direction: column; gap: 14px;">
                     <!-- status box -->
-                    <div style="flex: 1 1 0px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: rgb(19,41,67);">
+                    <div id="status-box" style="flex: 1 1 0px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: rgb(19,41,67);">
                         <div id="status" style="display: none; padding: 12px 20px; background: rgba(37,99,235,0.08); border-bottom: 2px solid rgba(37,99,235,0.15); font-size: 14px; font-weight: 600; color: #2563eb;"></div>
                         <div id="timer" style="display: none; margin: 20px; padding: 14px 0; border: 2px solid rgba(19,41,67,0.15); border-radius: 10px; text-align: center; font-size: 28px; font-weight: 600;"></div>
                         <button onclick="togglePause()" id="pause-btn" style="display: none; width: 36px; height: 36px; border-radius: 7px; border: none; background: rgba(19,41,67,0.07); color: rgb(19,41,67); cursor: pointer; align-items: center; justify-content: center; margin: 0 auto;">
                             <i id="pause-icon" data-lucide="pause" style="width: 16px; height: 16px;"></i>
                         </button>
+                        <!-- agent plan (filled in when the bugfix starts) -->
+                        <div id="agent-steps" style="flex-direction: column; gap: 7px; padding: 16px 20px; font-size: 13px;"></div>
                     </div>
                     <!-- message box -->
                     <div id="messages" style="flex: 1 1 0px; min-height: 0; overflow: hidden; padding: 14px; display: flex; flex-direction: column; gap: 8px; background: #f0f1ff; border: 2px solid rgba(79,70,229,0.13); border-radius: 14px;">
-                        <!--TODO: add bugs info here later-->
-                        <div style="flex: 1;"></div>
-                        <div style="display: flex; gap: 8px; justify-content: center; padding: 12px 16px;">
-                            <button style="padding: 5px 14px; border-radius: 6px; border: none; background: #dcfce7; color: #16a34a; font-size: 12px; font-weight: 600; cursor: pointer;">Correct</button>
-                            <button style="padding: 5px 14px; border-radius: 6px; border: none; background: #fee2e2; color: #dc2626; font-size: 12px; font-weight: 600; cursor: pointer;">Incorrect</button>
-                        </div>
+                        <!-- bug card (current bug + Correct/Incorrect) -->
+                        <div id="bug-card" style="flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;"></div>
+                        <!-- message stack (typed messages, newest on top) -->
+                        <div id="message-stack" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 8px;"></div>
                     </div>
                 </div>
             </div>
@@ -100,12 +123,54 @@
         let paused = false;
 		let timer = null;
 		let started = false;
+		let fixStarted = false;
 		let bugs = [];
 		let currentBugIndex = 0;
+		let fixesApplied = 0;
+		let codeLineCount = 0;
 		const timerLength = 300;
 		const serverUrl = 'http://localhost:1234';
 		const fileToShow = 'gradebook.py';
 		const fileBugs = 'gradeBook.json';
+
+		// Which elements each level shows.
+		// To add a new element: give it an id in the HTML, add the id to allElements,
+		// then add it to every level that should show it.
+		// Names that are not in allElements (like 'agent-replies' and 'line-highlight')
+		// are features with no box of their own; the code checks them with has().
+		const allElements = ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-steps', 'terminal'];
+		const levels = {
+			Low:    ['code-panel', 'status-box', 'bug-card'],
+			Medium: ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-replies', 'line-highlight'],
+			High:   ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-replies', 'line-highlight', 'agent-steps'],
+			Full:   ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-replies', 'line-highlight', 'agent-steps', 'terminal'],
+		};
+		let level = 'Low';
+
+		// Steps the agent goes through after a bugfix request
+		const stepNames = ['Read ' + fileToShow, 'Run the program', 'Analyze the code', 'Report bugs'];
+
+		// Terminal text colors
+		const colors = {
+			command: '#4ade80',
+			agent: '#7dd3fc',
+			output: '#cbd5e1',
+			user: '#facc15',
+			warning: '#fbbf24',
+			error: '#f87171',
+		};
+
+		const font = 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;';
+
+		// Does the current level include this element or feature?
+		function has(name) {
+			return levels[level].includes(name);
+		}
+
+		function wait(ms) {
+			return new Promise(resolve => setTimeout(resolve, ms));
+		}
+
         function togglePause() {
             const icon = document.getElementById('pause-icon');
             if (paused) {
@@ -119,14 +184,29 @@
         }
 
         function setDensity(btn) {
+            if (started) return; // level is locked once START is typed
             btn.parentElement.querySelectorAll('button').forEach(b => {
                 b.style.background = 'transparent';
                 b.style.color = 'rgba(19,41,67,0.5)';
             });
             btn.style.background = '#2563eb';
             btn.style.color = 'white';
-            const panels = document.getElementById('panels');
-            panels.style.display = btn.textContent === 'Full' ? 'flex' : 'none';
+            level = btn.textContent;
+            document.getElementById('panels').style.display = 'flex';
+            allElements.forEach(id => {
+                document.getElementById(id).style.display = has(id) ? 'flex' : 'none';
+            });
+            // the sidebar gets wider when it holds the terminal
+            document.getElementById('sidebar').style.width = has('terminal') ? '340px' : '200px';
+        }
+
+        // Turn the level buttons off (after START) or back on (if START fails)
+        function lockLevels(locked) {
+            document.querySelectorAll('.density-btn').forEach(b => {
+                b.disabled = locked;
+                b.style.cursor = locked ? 'default' : 'pointer';
+                b.style.opacity = locked && b.textContent !== level ? '0.4' : '1';
+            });
         }
 
         function send() {
@@ -144,79 +224,205 @@
             if (message === '') return;
             textBox.value = '';
             addMessage(message);
+            terminalLine('> ' + message, colors.user);
+
+            // any message that contains "bugfix" starts the agent
+            if (!fixStarted && message.toLowerCase().includes('bugfix')) {
+                agentSay('On it. I will look for bugs in ' + fileToShow + '.');
+                runBugfix();
+            } else if (fixStarted) {
+                agentSay('I am working on the bugfix. Mark each bug I found as Correct or Incorrect.');
+            } else {
+                terminalLine('[agent] No task yet. Waiting for instructions.', colors.agent);
+                agentSay('I have ' + fileToShow + ' open. Let me know when you want me to start a bugfix.');
+            }
         }
 
 		async function start() {
 			const codeBox = document.getElementById('code');
+			lockLevels(true);
 			try {
-				const response = await fetch(serverUrl + '/code/' + fileToShow);
+				const response = await fetch(serverUrl + '/code/' + fileToShow + '?level=' + level);
 				const result = await response.json();
 				if (!response.ok) {
 					codeBox.textContent = result.error;
+					lockLevels(false);
 					return;
 				}
 				showCode(result.name, result.code);
 				await loadBugs();
-				showStatus('Code Review');
-				startTimer();
+				showStatus('Waiting for Request');
 				started = true;
+				await typeCommand('agent --open ' + fileToShow);
+				terminalLine('[agent] Opened ' + fileToShow + ' (' + codeLineCount + ' lines)', colors.agent);
+				terminalLine('[agent] Ready. Waiting for instructions.', colors.agent);
+				agentSay('I opened ' + fileToShow + '. What would you like me to do?');
 			} catch (error) {
 				codeBox.textContent = 'Could not reach the server. Is backend/server.py running?';
+				lockLevels(false);
 			}
 		}
 
+        // Show the code with line numbers. Each line gets an id (line-1, line-2, ...)
+        // so the current bug can be highlighted.
         function showCode(fileName, code) {
             const codeBox = document.getElementById('code');
             const title = document.createElement('div');
             title.textContent = fileName;
-            title.style.cssText = 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; font-weight: 600; color: rgb(19,41,67);';
-            const codeText = document.createElement('pre');
-            codeText.textContent = code;
-            codeText.style.cssText = 'font-family: Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; color: rgb(19,41,67);';
+            title.style.cssText = font + ' font-size: 13px; font-weight: 600; color: rgb(19,41,67);';
+            const codeText = document.createElement('div');
+            codeText.style.cssText = 'font-family: Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; color: rgb(19,41,67); min-width: max-content;';
+            const lines = code.replace(/\n$/, '').split('\n');
+            codeLineCount = lines.length;
+            lines.forEach((text, i) => {
+                const row = document.createElement('div');
+                row.id = 'line-' + (i + 1);
+                row.className = 'code-line';
+                row.style.cssText = 'display: flex; border-radius: 3px;';
+                const number = document.createElement('span');
+                number.textContent = i + 1;
+                number.style.cssText = 'width: 36px; flex-shrink: 0; padding-right: 12px; text-align: right; color: rgba(19,41,67,0.35); user-select: none;';
+                const lineText = document.createElement('span');
+                lineText.textContent = text;
+                lineText.style.whiteSpace = 'pre';
+                row.append(number, lineText);
+                codeText.appendChild(row);
+            });
             codeBox.innerHTML = '';
             codeBox.append(title, codeText);
         }
 
+        // Highlight one line (34) or a range ("55-58"). Pass null to clear.
+        function highlightLines(line) {
+            document.querySelectorAll('.code-line').forEach(row => row.style.background = '');
+            if (line === null || !has('line-highlight')) return;
+            const [first, last] = String(line).split('-').map(Number);
+            for (let n = first; n <= (last || first); n++) {
+                const row = document.getElementById('line-' + n);
+                if (row) row.style.background = 'rgba(250,204,21,0.3)';
+            }
+            const firstRow = document.getElementById('line-' + first);
+            if (firstRow) {
+                // scroll the code box so the line sits in the middle
+                const codeBox = document.getElementById('code');
+                const offset = firstRow.getBoundingClientRect().top - codeBox.getBoundingClientRect().top;
+                codeBox.scrollTo({ top: codeBox.scrollTop + offset - codeBox.clientHeight / 2, behavior: 'smooth' });
+            }
+        }
+
+        // Bugs are loaded at START but not shown until the bugfix finishes
         async function loadBugs() {
-			const response = await fetch(serverUrl + '/bugs/' + fileBugs);
+			const response = await fetch(serverUrl + '/bugs/' + fileBugs + '?level=' + level);
 			const result = await response.json();
 			if (!response.ok) return;
 			bugs = result.bugs;
+		}
+
+		// Ask the server to actually run the code so the terminal shows real output
+		async function runProgram() {
+			try {
+				const response = await fetch(serverUrl + '/run/' + fileToShow + '?level=' + level);
+				return await response.json();
+			} catch (error) {
+				return { output: 'Could not run ' + fileToShow, exit_code: '?' };
+			}
+		}
+
+		// The fake agent working through the bugfix, step by step
+		async function runBugfix() {
+			fixStarted = true;
+			showStatus('Agent Working');
+			showSteps();
+			terminalLine('[agent] Task: find and fix bugs in ' + fileToShow, colors.agent);
+			await wait(500);
+
+			setStep(0, 'running');
+			await typeCommand('cat ' + fileToShow);
+			terminalLine('(' + codeLineCount + ' lines read)', colors.output);
+			await wait(400);
+			setStep(0, 'done');
+
+			setStep(1, 'running');
+			await typeCommand('python3 ' + fileToShow);
+			const run = await runProgram();
+			for (const line of run.output.trimEnd().split('\n')) {
+				terminalLine(line, lineColor(line));
+				await wait(60);
+			}
+			terminalLine('[agent] Program exited with code ' + run.exit_code, colors.agent);
+			await wait(400);
+			setStep(1, 'done');
+
+			setStep(2, 'running');
+			for (const bug of bugs) {
+				terminalLine('[agent] Checking line ' + bug.line + '...', colors.agent);
+				await wait(450);
+				terminalLine('  ! ' + bug.buggy, colors.warning);
+				await wait(150);
+			}
+			setStep(2, 'done');
+
+			setStep(3, 'running');
+			terminalLine('[agent] Found ' + bugs.length + ' bugs. Sending them for review.', colors.agent);
+			await wait(500);
+			setStep(3, 'done');
+
+			showStatus('Code Review');
+			startTimer();
 			showBug(0);
+			agentSay('I found ' + bugs.length + ' bugs in ' + fileToShow + '. Check each fix and mark it Correct or Incorrect.');
 		}
 
 		function showBug(index) {
 			const bug = bugs[index];
 			if (!bug) return;
-			const messageBox = document.getElementById('messages');
+			const bugCard = document.getElementById('bug-card');
 			const bugDiv = document.createElement('div');
-			bugDiv.style.cssText = 'padding: 10px 12px; background: white; border-radius: 8px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; color: rgb(19,41,67); display: flex; flex-direction: column; gap: 6px;';
+			bugDiv.style.cssText = 'padding: 10px 12px; background: white; border-radius: 8px; ' + font + ' font-size: 13px; color: rgb(19,41,67); display: flex; flex-direction: column; gap: 6px;';
 			bugDiv.innerHTML = `
 				<div style="font-weight: 600; color: #2563eb;">Bug ${bug.number} of ${bugs.length} — Line ${bug.line}</div>
 				<div><strong>Found:</strong> <code>${bug.buggy}</code></div>
 				<div><strong>Fix:</strong> <code>${bug.fix}</code></div>
 				<div style="color: rgba(19,41,67,0.6); font-size: 12px;">${bug.explanation}</div>
 			`;
-			messageBox.innerHTML = '';
-			messageBox.appendChild(bugDiv);
+			bugCard.innerHTML = '';
+			bugCard.appendChild(bugDiv);
 
 			// re-add the buttons
 			const btnDiv = document.createElement('div');
-			btnDiv.style.cssText = 'display: flex; gap: 8px; justify-content: center; padding: 12px 16px; margin-top: auto;';
+			btnDiv.style.cssText = 'display: flex; gap: 8px; justify-content: center; padding: 12px 16px;';
 			btnDiv.innerHTML = `
 				<button onclick="answerBug(true)" style="padding: 5px 14px; border-radius: 6px; border: none; background: #dcfce7; color: #16a34a; font-size: 12px; font-weight: 600; cursor: pointer;">Correct</button>
 				<button onclick="answerBug(false)" style="padding: 5px 14px; border-radius: 6px; border: none; background: #fee2e2; color: #dc2626; font-size: 12px; font-weight: 600; cursor: pointer;">Incorrect</button>
 			`;
-			messageBox.appendChild(btnDiv);
+			bugCard.appendChild(btnDiv);
+			highlightLines(bug.line);
 		}
 
 		function answerBug(correct) {
+			const bug = bugs[currentBugIndex];
+			if (correct) {
+				fixesApplied++;
+				terminalLine('[agent] Bug ' + bug.number + ' approved. Applying fix at line ' + bug.line + '.', colors.command);
+			} else {
+				terminalLine('[agent] Bug ' + bug.number + ' rejected. Leaving line ' + bug.line + ' unchanged.', colors.error);
+			}
 			currentBugIndex++;
 			if (currentBugIndex < bugs.length) {
 				showBug(currentBugIndex);
 			} else {
-				const messageBox = document.getElementById('messages');
-				messageBox.innerHTML = '<div style="padding: 12px; font-family: -apple-system, sans-serif; font-size: 13px; color: rgb(19,41,67); font-weight: 600;">All bugs reviewed!</div>';
+				const bugCard = document.getElementById('bug-card');
+				const doneText = document.createElement('div');
+				doneText.textContent = 'All bugs reviewed!';
+				doneText.style.cssText = 'padding: 12px; ' + font + ' font-size: 13px; color: rgb(19,41,67); font-weight: 600;';
+				bugCard.innerHTML = '';
+				bugCard.appendChild(doneText);
+				highlightLines(null);
+				clearInterval(timer);
+				showStatus('Review Complete');
+				const rejected = bugs.length - fixesApplied;
+				terminalLine('[agent] Review finished: ' + fixesApplied + ' fixes applied, ' + rejected + ' rejected.', colors.agent);
+				agentSay('Done. I applied ' + fixesApplied + ' of ' + bugs.length + ' fixes.');
 			}
 		}
 
@@ -226,12 +432,87 @@
             statusBar.style.display = 'block';
         }
 
+        // Plan checklist in the status box
+        function showSteps() {
+            const steps = document.getElementById('agent-steps');
+            steps.innerHTML = '<div style="font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: rgba(19,41,67,0.5);">AGENT PLAN</div>';
+            stepNames.forEach((name, i) => {
+                steps.innerHTML += `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="step-icon-${i}" style="width: 14px; text-align: center; color: rgba(19,41,67,0.35);">○</span>
+                        <span id="step-name-${i}" style="color: rgba(19,41,67,0.5);">${name}</span>
+                    </div>`;
+            });
+        }
+
+        // state is 'running' or 'done'
+        function setStep(index, state) {
+            const icon = document.getElementById('step-icon-' + index);
+            const name = document.getElementById('step-name-' + index);
+            if (state === 'running') {
+                icon.textContent = '◌';
+                icon.className = 'spin';
+                icon.style.color = '#2563eb';
+                name.style.color = 'rgb(19,41,67)';
+                name.style.fontWeight = '600';
+            } else {
+                icon.textContent = '✓';
+                icon.className = '';
+                icon.style.color = '#16a34a';
+                name.style.fontWeight = '400';
+            }
+        }
+
+        // Add a line to the terminal, just above the blinking cursor
+        function terminalLine(text, color) {
+            const body = document.getElementById('terminal-body');
+            const line = document.createElement('div');
+            line.textContent = text;
+            line.style.cssText = 'white-space: pre-wrap; overflow-wrap: anywhere; min-height: 1.5em; color: ' + (color || colors.output) + ';';
+            body.insertBefore(line, document.getElementById('terminal-cursor'));
+            body.scrollTop = body.scrollHeight;
+            return line;
+        }
+
+        // Type a command into the terminal one letter at a time
+        async function typeCommand(command) {
+            const line = terminalLine('$ ', colors.command);
+            for (const letter of command) {
+                line.textContent += letter;
+                await wait(30);
+            }
+            await wait(250);
+        }
+
+        function lineColor(line) {
+            if (line.includes('Error') || line.includes('Traceback')) return colors.error;
+            if (line.includes('Warning')) return colors.warning;
+            return colors.output;
+        }
+
         function addMessage(text) {
-            const messageBox = document.getElementById('messages');
+            const messageStack = document.getElementById('message-stack');
             const bubble = document.createElement('div');
             bubble.textContent = text;
-            bubble.style.cssText = 'flex-shrink: 0; padding: 8px 12px; background: white; border-radius: 8px; overflow-wrap: anywhere; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; color: rgb(19,41,67);';
-            messageBox.prepend(bubble);
+            bubble.style.cssText = 'flex-shrink: 0; padding: 8px 12px; background: white; border-radius: 8px; overflow-wrap: anywhere; ' + font + ' font-size: 13px; color: rgb(19,41,67);';
+            messageStack.prepend(bubble);
+        }
+
+        // Agent reply in the message stack: shows "thinking" dots, then the text
+        async function agentSay(text) {
+            if (!has('agent-replies')) return;
+            const messageStack = document.getElementById('message-stack');
+            const bubble = document.createElement('div');
+            bubble.style.cssText = 'flex-shrink: 0; padding: 8px 12px; background: rgba(37,99,235,0.1); border-radius: 8px; overflow-wrap: anywhere; ' + font + ' font-size: 13px; color: rgb(19,41,67);';
+            bubble.innerHTML = '<div style="font-size: 11px; font-weight: 600; color: #2563eb; margin-bottom: 2px;">Agent</div>';
+            const reply = document.createElement('div');
+            reply.innerHTML = '<span class="dot">●</span> <span class="dot">●</span> <span class="dot">●</span>';
+            reply.style.color = '#2563eb';
+            bubble.appendChild(reply);
+            messageStack.prepend(bubble);
+            await wait(900);
+            reply.textContent = text;
+            reply.style.color = '';
         }
 
         function startTimer() {
