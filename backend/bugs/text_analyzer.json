@@ -1,6 +1,9 @@
 {
     "bugs": [
-        { "number": 1, "line": 34, "buggy": "def __init__(self, name, scores=[])", "fix": "scores=None, then check if None" },
-        { "number": 2, "line": 50, "buggy": "for i in range(1, len(self.scores))", "fix": "for i in range(len(self.scores))" }
+        { "number": 1, "line": 32, "buggy": "word.lower()", "fix": "word = word.lower()", "explanation": "Strings are immutable so .lower() returns a new string but the result is never saved, leaving words in their original case." },
+        { "number": 2, "line": 48, "buggy": "return len(text.split('.'))", "fix": "return len(text.split('.')) - 1", "explanation": "The passage ends with a period so split('.') produces an extra empty string, reporting 7 sentences instead of 6." },
+        { "number": 3, "line": "55-58", "buggy": "counts[word] = 1 when word not in counts", "fix": "swap the two branches", "explanation": "When a word is not in the dictionary yet, adding 1 to a missing key raises a KeyError crash." },
+        { "number": 4, "line": 64, "buggy": "key=lambda pair: pair[0]", "fix": "key=lambda pair: pair[1]", "explanation": "pair[0] is the word so it sorts alphabetically instead of by count, giving the wrong top 5." },
+        { "number": 5, "line": 72, "buggy": "while low < high:", "fix": "while low <= high:", "explanation": "When low equals high one candidate is left but the loop stops early and returns -1, missing words that are actually in the list." }
     ]
 }
