@@ -85,12 +85,11 @@
                         <div id="agent-steps" style="flex-direction: column; gap: 7px; padding: 16px 20px; font-size: 13px;"></div>
                     </div>
                     <!-- message box -->
-                    <div id="messages" style="flex: 1 1 0px; min-height: 0; overflow: hidden; padding: 14px; display: flex; flex-direction: column; gap: 8px; background: #f0f1ff; border: 2px solid rgba(79,70,229,0.13); border-radius: 14px;">
+                    <div id="messages" style="flex: 1 1 0px; min-height: 0; overflow: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; background: #f0f1ff; border: 2px solid rgba(79,70,229,0.13); border-radius: 14px;">
                         <!-- bug card (current bug + Correct/Incorrect) -->
                         <div id="bug-card" style="flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;"></div>
                         <!-- message stack (typed messages, newest on top) -->
-                        <div id="message-stack" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 8px;"></div>
-                    </div>
+						<div id="message-stack" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></div>                    </div>
                 </div>
             </div>
 
@@ -511,7 +510,8 @@
             const bubble = document.createElement('div');
             bubble.textContent = text;
             bubble.style.cssText = 'flex-shrink: 0; padding: 8px 12px; background: white; border-radius: 8px; overflow-wrap: anywhere; ' + font + ' font-size: 13px; color: rgb(19,41,67);';
-            messageStack.prepend(bubble);
+            messageStack.append(bubble);
+			messageStack.scrollTop = messageStack.scrollHeight;
         }
 
         // Agent reply in the message stack: shows "thinking" dots, then the text
@@ -525,7 +525,8 @@
             reply.innerHTML = '<span class="dot">●</span> <span class="dot">●</span> <span class="dot">●</span>';
             reply.style.color = '#2563eb';
             bubble.appendChild(reply);
-            messageStack.prepend(bubble);
+            messageStack.append(bubble);
+			messageStack.scrollTop = messageStack.scrollHeight;
             await wait(900);
             reply.textContent = text;
             reply.style.color = '';
