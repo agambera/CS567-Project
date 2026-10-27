@@ -519,7 +519,7 @@
             if (!has('agent-replies')) return;
             const messageStack = document.getElementById('message-stack');
             const bubble = document.createElement('div');
-            bubble.style.cssText = 'flex-shrink: 0; padding: 8px 12px; background: rgba(37,99,235,0.1); border-radius: 8px; overflow-wrap: anywhere; ' + font + ' font-size: 13px; color: rgb(19,41,67);';
+            bubble.style.cssText = 'flex-shrink: 0; padding: 8px 12px; background: rgba(37,99,235,0.1); border-radius: 8px; overflow-wrap: anywhere; overflow-y: auto; max-height: 120px; ' + font + ' font-size: 13px; color: rgb(19,41,67);';
             bubble.innerHTML = '<div style="font-size: 11px; font-weight: 600; color: #2563eb; margin-bottom: 2px;">Agent</div>';
             const reply = document.createElement('div');
             reply.innerHTML = '<span class="dot">●</span> <span class="dot">●</span> <span class="dot">●</span>';
