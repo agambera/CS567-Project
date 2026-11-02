@@ -14,6 +14,10 @@
 		.dot { animation: fade 1.2s infinite; }
 		.dot:nth-child(2) { animation-delay: 0.2s; }
 		.dot:nth-child(3) { animation-delay: 0.4s; }
+		@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+		.shake { animation: shake 0.3s; }
+		#error-box { opacity: 0; transform: translateY(6px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; }
+		#error-box.show { opacity: 1; transform: translateY(0); }
 	</style>
 </head>
 <title>Agenti AI Customized Interface</title>
@@ -97,13 +101,24 @@
             </div>
 
             <!-- input bar -->
-            <div style="
+            <div id="input-bar" style="
+                position: relative;
                 width: 90%; margin: 0 auto 20px;
                 background-color: rgb(255, 255, 255);
                 border: 2px solid rgba(19, 41, 67, 0.15);
                 border-radius: 8px;
                 display: flex; align-items: center;
                 padding: 0 10px;">
+                <!-- temporary error box (shown above the input bar when a message is not understood) -->
+                <div id="error-box" style="
+                    position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 10;
+                    display: flex; align-items: center; gap: 8px;
+                    padding: 9px 14px; border-radius: 8px;
+                    background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; font-weight: 600;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                    <span>&#9888;</span><span id="error-text"></span>
+                </div>
                 <input id="message" type="text" placeholder="Enter your request..." onkeydown="if (event.key === 'Enter') send()" style="
                     flex: 1; height: 60px; border: none; outline: none;
                     background: transparent;
@@ -124,6 +139,9 @@
 		let timer = null;
 		let started = false;
 		let fixStarted = false;
+		let reviewing = false; // true while a bug card with Correct/Incorrect is showing
+		let errorTimer = null;
+		const errorLength = 3000; // how long the error box stays up (ms)
 		let bugs = [];
 		let currentBugIndex = 0;
 		let fixesApplied = 0;
@@ -219,31 +237,72 @@
         function send() {
             const textBox = document.getElementById('message');
             const message = textBox.value.trim();
+            if (message === '') return;
+            textBox.value = '';
             if (!started) {
                 // any message that contains "start" opens the session
                 if (message.toLowerCase().includes('start')) {
-                    textBox.value = '';
                     start();
                 } else {
-                    textBox.value = '';
+                    showError('Type START to begin.');
                 }
                 return;
             }
-            if (message === '') return;
-            textBox.value = '';
+
+            // typing Correct / Incorrect does the same thing as clicking the button
+            const answer = readAnswer(message);
+            if (reviewing && answer !== null) {
+                answerBug(answer, message);
+                return;
+            }
+
             addMessage(message);
             terminalLine('> ' + message, colors.user);
 
-            // any message that asks for a bugfix starts the agent
-            if (!fixStarted && asksForBugfix(message)) {
+            if (reviewing) {
+                showError('Type "Correct" or "Incorrect" (or click a button) to review this bug.');
+            } else if (!fixStarted && asksForBugfix(message)) {
+                // any message that asks for a bugfix starts the agent
                 agentSay('On it. I will look for bugs in ' + fileToShow + '.');
                 runBugfix();
+            } else if (fixStarted && currentBugIndex >= bugs.length && bugs.length > 0) {
+                showError('All bugs have already been reviewed.');
             } else if (fixStarted) {
-                agentSay('I am working on the bugfix. Mark each bug I found as Correct or Incorrect.');
+                showError('The agent is still working. Please wait.');
+                agentSay('I am still looking for bugs. I will send them for review soon.');
             } else {
+                showError('Command not recognized. Ask the agent to start a bugfix.');
                 terminalLine('[agent] No task yet. Waiting for instructions.', colors.agent);
                 agentSay('I have ' + fileToShow + ' open. Let me know when you want me to start a bugfix.');
             }
+        }
+
+        // "correct" -> true, "incorrect" -> false, anything else -> null.
+        // Capitals, spaces and punctuation don't matter ("Correct!", "in correct").
+        function readAnswer(message) {
+            const text = message.toLowerCase().replace(/[^a-z]+/g, '');
+            if (text === 'correct') return true;
+            if (text === 'incorrect') return false;
+            return null;
+        }
+
+        // Show the red error box above the input bar for a few seconds
+        function showError(text) {
+            const box = document.getElementById('error-box');
+            const bar = document.getElementById('input-bar');
+            document.getElementById('error-text').textContent = text;
+            box.classList.add('show');
+            bar.style.borderColor = '#f87171';
+            bar.classList.remove('shake');
+            void bar.offsetWidth; // restart the shake animation
+            bar.classList.add('shake');
+            clearTimeout(errorTimer);
+            errorTimer = setTimeout(hideError, errorLength);
+        }
+
+        function hideError() {
+            document.getElementById('error-box').classList.remove('show');
+            document.getElementById('input-bar').style.borderColor = 'rgba(19, 41, 67, 0.15)';
         }
 
         // Does the message contain one of the bugfix phrases?
@@ -417,10 +476,18 @@
 			`;
 			bugCard.appendChild(btnDiv);
 			highlightLines(bug.line);
+			reviewing = true;
 		}
 
-		function answerBug(correct) {
+		// Called by the Correct/Incorrect buttons and by typing "correct"/"incorrect".
+		// Either way the answer is logged in the message box and the terminal.
+		function answerBug(correct, typedText) {
+			if (!reviewing) return;
 			const bug = bugs[currentBugIndex];
+			hideError();
+			const text = typedText || (correct ? 'Correct' : 'Incorrect');
+			addMessage(text);
+			terminalLine('> ' + text, colors.user);
 			if (correct) {
 				fixesApplied++;
 				terminalLine('[agent] Bug ' + bug.number + ' approved. Applying fix at line ' + bug.line + '.', colors.command);
@@ -431,6 +498,7 @@
 			if (currentBugIndex < bugs.length) {
 				showBug(currentBugIndex);
 			} else {
+				reviewing = false;
 				const bugCard = document.getElementById('bug-card');
 				const doneText = document.createElement('div');
 				doneText.textContent = 'All bugs reviewed!';
