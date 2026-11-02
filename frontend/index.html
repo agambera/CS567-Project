@@ -23,10 +23,43 @@
 <title>Agenti AI Customized Interface</title>
 <body>
 
+    <!-- welcome page (shown first; hidden once the participant clicks Begin) -->
+    <div id="welcome" style="position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: rgb(246, 250, 255); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: rgb(19,41,67);">
+        <div style="width: 560px; max-width: 92vw; max-height: 92vh; overflow-y: auto; background: white; border: 2px solid rgba(19,41,67,0.09); border-radius: 14px; padding: 32px 36px; display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="layout-dashboard" style="width: 24px; height: 24px; color: #2563eb;"></i>
+                <div style="font-size: 22px; font-weight: 600;">Welcome</div>
+            </div>
+            <div style="display: flex; gap: 14px;">
+                <label style="flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600;">
+                    Participant Number
+                    <input id="participant-input" type="text" inputmode="numeric" autocomplete="off" onkeydown="if (event.key === 'Enter') beginSession()" style="height: 40px; padding: 0 12px; border: 2px solid rgba(19,41,67,0.15); border-radius: 8px; font-size: 15px; outline: none; color: rgb(19,41,67);">
+                </label>
+                <label style="flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600;">
+                    Experiment Number
+                    <input id="experiment-input" type="text" inputmode="numeric" autocomplete="off" onkeydown="if (event.key === 'Enter') beginSession()" style="height: 40px; padding: 0 12px; border: 2px solid rgba(19,41,67,0.15); border-radius: 8px; font-size: 15px; outline: none; color: rgb(19,41,67);">
+                </label>
+            </div>
+            <div style="background: rgba(37,99,235,0.06); border: 1px solid rgba(37,99,235,0.15); border-radius: 10px; padding: 16px 18px; font-size: 14px; line-height: 1.55; display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-weight: 600; color: #2563eb;">Your Task</div>
+                <div>Your goal is to <strong>correct a Python program</strong> with the help of an AI agent. You are in charge: the agent only does what you direct it to do.</div>
+                <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 4px;">
+                    <li>Type your instructions to the agent in the message box at the bottom of the screen.</li>
+                    <li>When the agent suggests a fix, decide whether the agent is correct and choose <strong>Correct</strong> or <strong>Incorrect</strong>.</li>
+                    <li>The program's output is shown on the left. It updates each time a fix is applied and will only be fully correct once every bug is fixed.</li>
+                    <li id="welcome-timer-note"></li>
+                </ul>
+                <div>When you are ready, click <strong>Begin</strong>, then type <strong>START</strong> in the message box.</div>
+            </div>
+            <div id="welcome-error" style="display: none; font-size: 13px; font-weight: 600; color: #b91c1c;"></div>
+            <button onclick="beginSession()" style="align-self: flex-end; padding: 10px 28px; border: none; border-radius: 8px; background: #2563eb; color: white; font-size: 15px; font-weight: 600; cursor: pointer;">Begin</button>
+        </div>
+    </div>
+
     <div style="display: flex; height: 100vh; width: 100vw; overflow: hidden;">
 
         <!-- left box -->
-        <div id="sidebar" style="background-color: rgb(19, 41, 67); width: 200px; flex-shrink: 0; display: flex; padding: 14px;">
+        <div id="sidebar" style="background-color: rgb(19, 41, 67); width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; padding: 14px;">
             <!-- agent terminal -->
             <div id="terminal" style="display: none; flex: 1; min-width: 0; flex-direction: column; overflow: hidden; background: #0b1220; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
                 <div style="display: flex; align-items: center; gap: 6px; padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
@@ -39,6 +72,14 @@
                     <div style="color: rgba(255,255,255,0.5);">Agent ready. Waiting for START...</div>
                     <span id="terminal-cursor" class="cursor" style="color: #4ade80;">&#9608;</span>
                 </div>
+            </div>
+            <!-- program output (re-run with the accepted fixes after every Correct) -->
+            <div id="output-panel" style="display: none; flex: 1; min-height: 0; flex-direction: column; overflow: hidden; background: #0b1220; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); font-family: Menlo, Consolas, monospace; font-size: 11px;">
+                    <span style="color: rgba(255,255,255,0.7); font-weight: 600;">Output</span>
+                    <span id="output-status" style="color: rgba(255,255,255,0.5);"></span>
+                </div>
+                <div id="output-body" style="flex: 1; min-height: 0; overflow: auto; padding: 10px 12px; font-family: Menlo, Consolas, monospace; font-size: 11px; line-height: 1.5; color: #cbd5e1; white-space: pre;"><span style="color: rgba(255,255,255,0.5);">The program output will appear here once the code is opened.</span></div>
             </div>
         </div>
 
@@ -60,6 +101,7 @@
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <i data-lucide="layout-dashboard" style="width: 20px; height: 20px; color: #2563eb;"></i>
                     <strong style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 17px; font-weight: 600; color: rgb(19,41,67);">Agentic AI Interface</strong>
+                    <span id="session-info" style="margin-left: 10px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 12px; color: rgba(19,41,67,0.5);"></span>
                 </div>
                 <div style="display: flex; gap: 4px; background: rgba(19,41,67,0.07); border-radius: 9px; padding: 3px;">
                     <button class="density-btn" onclick="setDensity(this)" style="border: none; background: transparent; color: rgba(19,41,67,0.5); padding: 5px 18px; border-radius: 7px; font-size: 13px; cursor: pointer;">Low</button>
@@ -143,8 +185,11 @@
 		let errorTimer = null;
 		const errorLength = 3000; // how long the error box stays up (ms)
 		let bugs = [];
-		let currentBugIndex = 0;
-		let fixesApplied = 0;
+		let queue = [];        // bugs still waiting for a Correct; a rejected bug goes to the back
+		let fixed = [];        // numbers of the bugs whose fix has been applied
+		let reviewDone = false;
+		let participant = '';
+		let experiment = '';
 		let codeLineCount = 0;
 		const timerLength = 300;
 		const serverUrl = 'http://localhost:1234';
@@ -156,20 +201,39 @@
 		// then add it to every level that should show it.
 		// Names that are not in allElements (like 'agent-replies' and 'line-highlight')
 		// are features with no box of their own; the code checks them with has().
-		const allElements = ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-working', 'agent-steps', 'terminal'];
+		const allElements = ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-working', 'agent-steps', 'terminal', 'output-panel'];
 		const levels = {
-			Low:    ['code-panel', 'status-box', 'bug-card', 'agent-working'],
-			High:   ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-replies', 'line-highlight', 'agent-steps', 'terminal'],
+			Low:    ['code-panel', 'status-box', 'bug-card', 'agent-working', 'output-panel'],
+			High:   ['code-panel', 'status-box', 'bug-card', 'message-stack', 'agent-replies', 'line-highlight', 'agent-steps', 'terminal', 'output-panel'],
 		};
 		let level = 'Low';
 
 		// Phrases that start the bugfix. Capitals, spaces and dashes don't matter,
 		// so 'bug fix' also matches "bugfix", "Bug-Fix" and "BUG FIX".
 		const bugfixPhrases = [
-			'bug fix', 'bug fixes', 'fix bug', 'fix bugs', 'fix the bug', 'fix the bugs',
-			'find bugs', 'find the bugs', 'code fix', 'fix code', 'fix the code', 'fix my code',
-			'fix this', 'fix it', 'debug', 'debugging', 'troubleshoot',
-			'make it work', 'get it working', 'get it to work',
+			// bug words
+			'bug fix', 'bug fixes', 'bug fixing', 'bug hunt', 'bug check', 'bug search',
+			'fix bug', 'fix bugs', 'fix the bug', 'fix the bugs', 'fix any bugs', 'fix all bugs', 'fix all the bugs',
+			'find bug', 'find bugs', 'find the bug', 'find the bugs', 'find any bugs', 'find all bugs',
+			'look for bugs', 'search for bugs', 'check for bugs', 'scan for bugs', 'hunt for bugs',
+			'remove bugs', 'remove the bugs', 'squash bugs', 'squash the bugs', 'get rid of bugs',
+			'any bugs', 'are there bugs', 'are there any bugs',
+			// fix / correct / repair the code
+			'code fix', 'fix code', 'fix the code', 'fix my code', 'fix this code', 'fix the program', 'fix the file',
+			'correct code', 'correct the code', 'correct my code', 'correct this code', 'correct the program',
+			'repair code', 'repair the code', 'repair my code', 'repair the program',
+			'patch code', 'patch the code', 'patch it',
+			'fix this', 'fix it', 'fix that', 'fix everything', 'fix them', 'fix errors', 'fix the errors',
+			'fix issues', 'fix the issues', 'fix problems', 'fix the problems', 'fix mistakes', 'fix the mistakes',
+			'correct errors', 'correct the errors', 'correct mistakes', 'correct the mistakes',
+			// find problems
+			'find errors', 'find the errors', 'find issues', 'find the issues', 'find problems', 'find the problems',
+			'find mistakes', 'find the mistakes', 'check the code', 'check my code', 'review the code', 'review my code',
+			'whats wrong', 'what is wrong', 'something wrong', 'not working', 'doesnt work', 'does not work', 'is broken',
+			// debug words
+			'debug', 'debugging', 'debug it', 'debug the code', 'debug my code', 'troubleshoot', 'troubleshooting',
+			// make it work
+			'make it work', 'get it working', 'get it to work', 'make it run', 'get it running',
 		];
 
 		// Steps the agent goes through after a bugfix request
@@ -221,8 +285,6 @@
             allElements.forEach(id => {
                 document.getElementById(id).style.display = has(id) ? 'flex' : 'none';
             });
-            // the sidebar gets wider when it holds the terminal
-            document.getElementById('sidebar').style.width = has('terminal') ? '340px' : '200px';
         }
 
         // Turn the level buttons off (after START) or back on (if START fails)
@@ -232,6 +294,30 @@
                 b.style.cursor = locked ? 'default' : 'pointer';
                 b.style.opacity = locked && b.textContent !== level ? '0.4' : '1';
             });
+        }
+
+        // Welcome page: both numbers are required before the interface opens
+        function beginSession() {
+            participant = document.getElementById('participant-input').value.trim();
+            experiment = document.getElementById('experiment-input').value.trim();
+            const error = document.getElementById('welcome-error');
+            if (participant === '' || experiment === '') {
+                error.textContent = 'Please enter both the participant number and the experiment number.';
+                error.style.display = 'block';
+                return;
+            }
+            document.getElementById('welcome').style.display = 'none';
+            document.getElementById('session-info').textContent = 'Participant ' + participant + ' · Experiment ' + experiment;
+            document.getElementById('message').focus();
+        }
+
+        // Parts of the URL every server request shares
+        function query() {
+            return '?level=' + encodeURIComponent(level)
+                + '&participant=' + encodeURIComponent(participant)
+                + '&experiment=' + encodeURIComponent(experiment)
+                + '&bugs=' + encodeURIComponent(fileBugs)
+                + '&fixed=' + fixed.join(',');
         }
 
         function send() {
@@ -265,8 +351,8 @@
                 // any message that asks for a bugfix starts the agent
                 agentSay('On it. I will look for bugs in ' + fileToShow + '.');
                 runBugfix();
-            } else if (fixStarted && currentBugIndex >= bugs.length && bugs.length > 0) {
-                showError('All bugs have already been reviewed.');
+            } else if (reviewDone) {
+                showError('All bugs have already been fixed.');
             } else if (fixStarted) {
                 showError('The agent is still working. Please wait.');
                 agentSay('I am still looking for bugs. I will send them for review soon.');
@@ -307,7 +393,8 @@
 
         // Does the message contain one of the bugfix phrases?
         function asksForBugfix(message) {
-            const text = message.toLowerCase().replace(/[^a-z]+/g, ' ');
+            // apostrophes are dropped first so "what's" matches 'whats'
+            const text = message.toLowerCase().replace(/['\u2019]/g, '').replace(/[^a-z]+/g, ' ');
             return bugfixPhrases.some(phrase => {
                 // whole words only; the space between words is optional
                 const pattern = new RegExp('\\b' + phrase.split(' ').join('\\s*') + '\\b');
@@ -319,7 +406,7 @@
 			const codeBox = document.getElementById('code');
 			lockLevels(true);
 			try {
-				const response = await fetch(serverUrl + '/code/' + fileToShow + '?level=' + level);
+				const response = await fetch(serverUrl + '/code/' + fileToShow + query());
 				const result = await response.json();
 				if (!response.ok) {
 					codeBox.textContent = result.error;
@@ -327,6 +414,7 @@
 					return;
 				}
 				showCode(result.name, result.code);
+				refreshOutput();
 				await loadBugs();
 				showStatus('Waiting for Request');
 				started = true;
@@ -389,19 +477,54 @@
 
         // Bugs are loaded at START but not shown until the bugfix finishes
         async function loadBugs() {
-			const response = await fetch(serverUrl + '/bugs/' + fileBugs + '?level=' + level);
+			const response = await fetch(serverUrl + '/bugs/' + fileBugs + query());
 			const result = await response.json();
 			if (!response.ok) return;
 			bugs = result.bugs;
 		}
 
-		// Ask the server to actually run the code so the terminal shows real output
+		// Ask the server to actually run the code (with the fixes applied so far)
 		async function runProgram() {
 			try {
-				const response = await fetch(serverUrl + '/run/' + fileToShow + '?level=' + level);
+				const response = await fetch(serverUrl + '/run/' + fileToShow + query());
 				return await response.json();
 			} catch (error) {
 				return { output: 'Could not run ' + fileToShow, exit_code: '?' };
+			}
+		}
+
+		// Re-run the program and show the result in the output panel on the left
+		async function refreshOutput() {
+			const body = document.getElementById('output-body');
+			const status = document.getElementById('output-status');
+			status.textContent = 'running...';
+			const run = await runProgram();
+			body.innerHTML = '';
+			for (const line of run.output.replace(/\n$/, '').split('\n')) {
+				const row = document.createElement('div');
+				row.textContent = line || ' ';
+				row.style.color = lineColor(line);
+				body.appendChild(row);
+			}
+			const ok = run.exit_code === 0;
+			status.textContent = 'exit code ' + run.exit_code;
+			status.style.color = ok ? colors.command : colors.error;
+			body.scrollTop = body.scrollHeight;
+			return run;
+		}
+
+		// Load the code again with the accepted fixes applied (keeps the scroll position)
+		async function reloadCode() {
+			const codeBox = document.getElementById('code');
+			const scroll = codeBox.scrollTop;
+			try {
+				const response = await fetch(serverUrl + '/code/' + fileToShow + query());
+				const result = await response.json();
+				if (!response.ok) return;
+				showCode(result.name, result.code);
+				codeBox.scrollTop = scroll;
+			} catch (error) {
+				showError('Could not reach the server to apply the fix.');
 			}
 		}
 
@@ -448,18 +571,22 @@
 			showWorking(false);
 			showStatus('Code Review');
 			startTimer();
-			showBug(0);
+			queue = bugs.slice();
+			showBug(queue[0]);
 			agentSay('I found ' + bugs.length + ' bugs in ' + fileToShow + '. Check each fix and mark it Correct or Incorrect.');
 		}
 
-		function showBug(index) {
-			const bug = bugs[index];
+		function showBug(bug) {
 			if (!bug) return;
 			const bugCard = document.getElementById('bug-card');
 			const bugDiv = document.createElement('div');
 			bugDiv.style.cssText = 'padding: 10px 12px; background: white; border-radius: 8px; ' + font + ' font-size: 13px; color: rgb(19,41,67); display: flex; flex-direction: column; gap: 6px;';
 			bugDiv.innerHTML = `
-				<div style="font-weight: 600; color: #2563eb;">Bug ${bug.number} of ${bugs.length} — Line ${bug.line}</div>
+				<div style="display: flex; justify-content: space-between; gap: 8px;">
+					<span style="font-weight: 600; color: #2563eb;">Bug ${bug.number} of ${bugs.length} — Line ${bug.line}</span>
+					<span style="font-size: 11px; color: rgba(19,41,67,0.5);">${fixed.length}/${bugs.length} fixed</span>
+				</div>
+				${bug.askedBefore ? '<div style="font-size: 11px; font-weight: 600; color: #d97706;">Asking again</div>' : ''}
 				<div><strong>Found:</strong> <code>${bug.buggy}</code></div>
 				<div><strong>Fix:</strong> <code>${bug.fix}</code></div>
 				<div style="color: rgba(19,41,67,0.6); font-size: 12px;">${bug.explanation}</div>
@@ -469,10 +596,13 @@
 
 			// re-add the buttons
 			const btnDiv = document.createElement('div');
-			btnDiv.style.cssText = 'display: flex; gap: 8px; justify-content: center; padding: 12px 16px;';
+			btnDiv.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 16px;';
 			btnDiv.innerHTML = `
-				<button onclick="answerBug(true)" style="padding: 5px 14px; border-radius: 6px; border: none; background: #dcfce7; color: #16a34a; font-size: 12px; font-weight: 600; cursor: pointer;">Correct</button>
-				<button onclick="answerBug(false)" style="padding: 5px 14px; border-radius: 6px; border: none; background: #fee2e2; color: #dc2626; font-size: 12px; font-weight: 600; cursor: pointer;">Incorrect</button>
+				<div style="display: flex; gap: 8px;">
+					<button onclick="answerBug(true)" style="padding: 5px 14px; border-radius: 6px; border: none; background: #dcfce7; color: #16a34a; font-size: 12px; font-weight: 600; cursor: pointer;">Correct</button>
+					<button onclick="answerBug(false)" style="padding: 5px 14px; border-radius: 6px; border: none; background: #fee2e2; color: #dc2626; font-size: 12px; font-weight: 600; cursor: pointer;">Incorrect</button>
+				</div>
+				<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 11px; color: rgba(19,41,67,0.5);">Is the agent correct?</div>
 			`;
 			bugCard.appendChild(btnDiv);
 			highlightLines(bug.line);
@@ -481,36 +611,49 @@
 
 		// Called by the Correct/Incorrect buttons and by typing "correct"/"incorrect".
 		// Either way the answer is logged in the message box and the terminal.
-		function answerBug(correct, typedText) {
+		// Correct: the fix is applied, the code and output are refreshed.
+		// Incorrect: the bug goes to the back of the queue and is asked again later,
+		// so the code is only fully fixed once every fix has been accepted.
+		async function answerBug(correct, typedText) {
 			if (!reviewing) return;
-			const bug = bugs[currentBugIndex];
+			reviewing = false; // ignore more clicks until the next bug is shown
+			const bug = queue.shift();
 			hideError();
 			const text = typedText || (correct ? 'Correct' : 'Incorrect');
 			addMessage(text);
 			terminalLine('> ' + text, colors.user);
+			document.querySelectorAll('#bug-card button').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+
 			if (correct) {
-				fixesApplied++;
+				fixed.push(bug.number);
 				terminalLine('[agent] Bug ' + bug.number + ' approved. Applying fix at line ' + bug.line + '.', colors.command);
+				await reloadCode();
+				await typeCommand('python3 ' + fileToShow);
+				const run = await refreshOutput();
+				terminalLine('[agent] Program exited with code ' + run.exit_code, colors.agent);
 			} else {
-				terminalLine('[agent] Bug ' + bug.number + ' rejected. Leaving line ' + bug.line + ' unchanged.', colors.error);
+				bug.askedBefore = true;
+				queue.push(bug);
+				terminalLine('[agent] Bug ' + bug.number + ' rejected. Leaving line ' + bug.line + ' unchanged for now.', colors.error);
+				if (queue.length > 1) agentSay('Okay, I will leave bug ' + bug.number + ' for now and ask about it again later.');
+				else agentSay('Bug ' + bug.number + ' is the only one left. Please take another look.');
 			}
-			currentBugIndex++;
-			if (currentBugIndex < bugs.length) {
-				showBug(currentBugIndex);
+
+			if (queue.length > 0) {
+				showBug(queue[0]);
 			} else {
-				reviewing = false;
+				reviewDone = true;
 				const bugCard = document.getElementById('bug-card');
 				const doneText = document.createElement('div');
-				doneText.textContent = 'All bugs reviewed!';
-				doneText.style.cssText = 'padding: 12px; ' + font + ' font-size: 13px; color: rgb(19,41,67); font-weight: 600;';
+				doneText.textContent = 'All bugs fixed!';
+				doneText.style.cssText = 'padding: 12px; ' + font + ' font-size: 13px; color: #16a34a; font-weight: 600;';
 				bugCard.innerHTML = '';
 				bugCard.appendChild(doneText);
 				highlightLines(null);
 				clearInterval(timer);
-				showStatus('Review Complete');
-				const rejected = bugs.length - fixesApplied;
-				terminalLine('[agent] Review finished: ' + fixesApplied + ' fixes applied, ' + rejected + ' rejected.', colors.agent);
-				agentSay('Done. I applied ' + fixesApplied + ' of ' + bugs.length + ' fixes.');
+				showStatus('Code Fixed');
+				terminalLine('[agent] All ' + bugs.length + ' fixes applied. ' + fileToShow + ' is fixed.', colors.agent);
+				agentSay('Done. All ' + bugs.length + ' fixes are applied and the program output is now correct.');
 			}
 		}
 
@@ -636,6 +779,9 @@
 
         window.onload = function() {
             setDensity(document.querySelectorAll('.density-btn')[0]);
+            document.getElementById('welcome-timer-note').textContent =
+                'You will have ' + Math.round(timerLength / 60) + ' minutes to review the fixes once the agent finds the bugs.';
+            document.getElementById('participant-input').focus();
             lucide.createIcons();
         }
     </script>
